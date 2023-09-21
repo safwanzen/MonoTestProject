@@ -32,27 +32,34 @@ public class Character
     public void Update(GameTime gameTime)
     {
         var kstate = Keyboard.GetState();
-
+        var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        
         if (kstate.IsKeyDown(Keys.W))
         {
-            Position.Y -= Speed.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //Position.Y -= Speed.Y * deltaTime;
+            Speed.Y = -20f;
         }
 
         if (kstate.IsKeyDown(Keys.S))
         {
-            Position.Y += Speed.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position.Y += Speed.Y * deltaTime;
         }
 
         if (kstate.IsKeyDown(Keys.A))
         {
-            Position.X -= Speed.X * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position.X -= Speed.X * deltaTime;
         }
 
         if (kstate.IsKeyDown(Keys.D))
         {
-            Position.X += Speed.X * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position.X += Speed.X * deltaTime;
         }
 
+        // physics
+        Speed.Y += MainGame.GravityAcceleration * deltaTime;
+        Position.Y += Speed.Y;
+
+        // check for boundary collision
         if (Position.X > MainGame.ScreenWidth - Texture.Width / 2)
         {
             Position.X = MainGame.ScreenWidth - Texture.Width / 2;
@@ -65,12 +72,15 @@ public class Character
         if (Position.Y > MainGame.ScreenHeight - Texture.Height / 2)
         {
             Position.Y = MainGame.ScreenHeight - Texture.Height / 2;
+            Speed.Y = -Speed.Y * 0.97f;
         }
         else if (Position.Y < Texture.Height / 2)
         {
             Position.Y = Texture.Height / 2;
+            Speed.Y = -Speed.Y * 0.97f;
         }
 
+        // trail array
         trails[start] = Position;
         start++;
         if (count < size - 1) count++;
@@ -84,7 +94,7 @@ public class Character
         {
             if (index > count) index = 0;
             Vector2 pos = trails[index];
-            spriteBatch.Draw(Texture, pos - new Vector2(Texture.Width / 2, Texture.Height / 2), new Color(Color.AliceBlue, i * 10 + 10));
+            spriteBatch.Draw(Texture, pos - new Vector2(Texture.Width / 2, Texture.Height / 2), new Color(Color.CornflowerBlue, i * 10 + 10));
             index++;
         }
         spriteBatch.Draw(Texture, Position, null, Color.White, 0f,

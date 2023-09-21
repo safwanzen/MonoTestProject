@@ -7,7 +7,7 @@ namespace MonoTestProject;
 public class MainGame : Game
 {
     public static int ScreenWidth, ScreenHeight = 0;
-    public static float GravityAcceleration = 5f;
+    public static float GravityAcceleration = 50f;
 
     Texture2D ballTexture;
     Vector2 ballPosition;
@@ -36,7 +36,7 @@ public class MainGame : Game
         character = new Character()
         {
             Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
-            Speed = new Vector2(300f, 300f),
+            Speed = new Vector2(300f, 0f),
         };
         base.Initialize();
     }
