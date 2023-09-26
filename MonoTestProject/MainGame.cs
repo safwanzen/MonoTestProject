@@ -17,6 +17,8 @@ public class MainGame : Game
     float ballRotation;
 
     Texture2D handTexture;
+    Texture2D particleTexture;
+    public static Texture2D ParticleTrailTexture;
 
     Character character;
 
@@ -56,6 +58,27 @@ public class MainGame : Game
         handTexture = Content.Load<Texture2D>("hand");
         character.Texture = handTexture;
         ballTexture = handTexture;//Content.Load<Texture2D>("ball");
+        
+
+        var data = new Color[handTexture.Width * handTexture.Height];
+        handTexture.GetData(data);
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i].A == 0) continue;
+            data[i] = Color.Orange;
+        }
+
+        particleTexture = new Texture2D(GraphicsDevice, handTexture.Width, handTexture.Height);
+        particleTexture.SetData(data);
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i].A == 0) continue;
+            data[i] = Color.AliceBlue;
+        }
+        ParticleTrailTexture = new Texture2D(GraphicsDevice, handTexture.Width, handTexture.Height);
+        ParticleTrailTexture.SetData(data);
+
     }
 
     double particleTimer = 0;
@@ -87,8 +110,8 @@ public class MainGame : Game
             var newDirection = dist + dirFluctuation;
             newDirection.Normalize();
 
-            _particles.Add(new Particle(speed: newDirection * 18, rotation: character.Rotation) { 
-                Texture = handTexture, 
+            _particles.Add(new Particle(direction: newDirection * 18, rotation: character.Rotation) { 
+                Texture = particleTexture, 
                 Position = character.Position /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */});
         }
 
@@ -106,12 +129,14 @@ public class MainGame : Game
 
         // TODO: Add your drawing code here
         _spriteBatch.Begin();
+
+        character.Draw(_spriteBatch);
+
         foreach (var particle in _particles)
         {
             particle.Draw(_spriteBatch);
         }
 
-        character.Draw(_spriteBatch);
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 

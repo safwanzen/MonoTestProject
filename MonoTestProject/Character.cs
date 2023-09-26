@@ -1,11 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
@@ -19,18 +14,22 @@ public class Character
     private const float speedMagnitude = 500;
 
     // circular queue implementation
-    int size = 15;
+    int trailSize = 5;
     int count = 0;
     int start = 0;
     public (Vector2, float)[] trails;
+    
+    const double frameTime = 0.050;
+    double currTime = 0;
 
     int increment;
 
     public Character()
     {
-        increment = 255 / size;
-        trails = new (Vector2, float)[size];
+        increment = 255 / trailSize;
+        trails = new (Vector2, float)[trailSize];
     }
+
 
     public void Update(GameTime gameTime)
     {
@@ -74,10 +73,16 @@ public class Character
         }
 
         // trail array
-        trails[start] = (Position, Rotation);
-        start++;
-        if (count < size - 1) count++;
-        if (start > size - 1) start = 0;
+        currTime += deltaTime;
+
+        if (currTime > frameTime)
+        {
+            currTime = 0;
+            trails[start] = (Position, Rotation);
+            start++;
+            if (count < trailSize - 1) count++;
+            if (start > trailSize - 1) start = 0;
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
@@ -88,7 +93,7 @@ public class Character
             if (index > count) index = 0;
             (Vector2 pos, float rot) = trails[index];
             spriteBatch.Draw(Texture, pos, null, 
-                new Color(Color.CornflowerBlue, i * 10 + 10), rot + MathHelper.PiOver2,
+                Color.White, rot + MathHelper.PiOver2,
                 new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
             index++;
         }
