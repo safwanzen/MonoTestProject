@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace MonoTestProject;
@@ -12,7 +13,8 @@ public class MainGame : Game
 
     Texture2D ballTexture;
     Vector2 ballPosition;
-    float ballSpeed;
+    Vector2 ballSpeed;
+    float ballRotation;
 
     Texture2D handTexture;
 
@@ -37,7 +39,7 @@ public class MainGame : Game
         // TODO: Add your initialization logic here
         ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 2,
             _graphics.PreferredBackBufferHeight / 2);
-        ballSpeed = 1000f;
+        ballSpeed = new Vector2();
         character = new Character()
         {
             Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
@@ -51,26 +53,43 @@ public class MainGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         // TODO: use this.Content to load your game content here
-        character.Texture = Content.Load<Texture2D>("ball");
-        ballTexture = Content.Load<Texture2D>("ball");
         handTexture = Content.Load<Texture2D>("hand");
+        character.Texture = handTexture;
+        ballTexture = handTexture;//Content.Load<Texture2D>("ball");
     }
 
     double particleTimer = 0;
+    Random random = new Random();
 
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
+
+        //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+                
         particleTimer += gameTime.ElapsedGameTime.TotalSeconds;
 
-        var mousestate = Mouse.GetState();
-        
-        if (mousestate.LeftButton == ButtonState.Pressed && particleTimer > 0.01)
+        var mousestate = Mouse.GetState(Window);
+        var dist = mousestate.Position.ToVector2() - character.Position;
+        if (dist.Length() > 0) dist.Normalize();
+        character.Rotation = (float)Math.Atan2(dist.Y, dist.X);
+
+        character.Update(gameTime);
+
+        if (mousestate.LeftButton == ButtonState.Pressed && particleTimer > 0.05)
         {
             particleTimer = 0;
-            _particles.Add(new Particle() { Texture = handTexture, Position = mousestate.Position.ToVector2() });
+
+            var randAngle = character.Rotation + (float)random.NextDouble() * 0.3 - 0.15;
+            var dirFluctuation = new Vector2((float)Math.Cos(randAngle), (float)Math.Sin(randAngle));
+            var newDirection = dist + dirFluctuation;
+            newDirection.Normalize();
+
+            _particles.Add(new Particle(speed: newDirection * 18, rotation: character.Rotation) { 
+                Texture = handTexture, 
+                Position = character.Position /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */});
         }
 
         foreach (var particle in _particles)
@@ -78,7 +97,6 @@ public class MainGame : Game
             particle.Update(gameTime);
         }
 
-        //character.Update(gameTime);
         base.Update(gameTime);
     }
 
@@ -92,9 +110,12 @@ public class MainGame : Game
         {
             particle.Draw(_spriteBatch);
         }
-        //character.Draw(_spriteBatch);
-        _spriteBatch.End();
 
+        character.Draw(_spriteBatch);
+        //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
+        //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+
+        _spriteBatch.End();
         base.Draw(gameTime);
     }
 }

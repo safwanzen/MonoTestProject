@@ -14,50 +14,43 @@ public class Character
     public Texture2D Texture;
     public Vector2 Position;
     public Vector2 Speed;
+    public float Rotation;
+
+    private const float speedMagnitude = 500;
 
     // circular queue implementation
     int size = 15;
     int count = 0;
     int start = 0;
-    public Vector2[] trails;
+    public (Vector2, float)[] trails;
 
     int increment;
 
     public Character()
     {
         increment = 255 / size;
-        trails = new Vector2[size];
+        trails = new (Vector2, float)[size];
     }
 
     public void Update(GameTime gameTime)
     {
         var kstate = Keyboard.GetState();
         var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        
-        if (kstate.IsKeyDown(Keys.W))
-        {
-            //Position.Y -= Speed.Y * deltaTime;
-            Speed.Y = -20f;
-        }
 
-        if (kstate.IsKeyDown(Keys.S))
-        {
-            Position.Y += Speed.Y * deltaTime;
-        }
+        if (kstate.IsKeyDown(Keys.W)) { Speed.Y = -1; }
+        else if (kstate.IsKeyDown(Keys.S)) { Speed.Y = 1; }
+        else { Speed.Y = 0; }
 
-        if (kstate.IsKeyDown(Keys.A))
-        {
-            Position.X -= Speed.X * deltaTime;
-        }
-
-        if (kstate.IsKeyDown(Keys.D))
-        {
-            Position.X += Speed.X * deltaTime;
-        }
+        if (kstate.IsKeyDown(Keys.A)) { Speed.X = -1; }
+        else if (kstate.IsKeyDown(Keys.D)) { Speed.X = 1; }
+        else { Speed.X = 0; }
 
         // physics
-        Speed.Y += MainGame.GravityAcceleration * deltaTime;
-        Position.Y += Speed.Y;
+        //Speed.Y += MainGame.GravityAcceleration * deltaTime;
+        //Position.Y += Speed.Y;
+
+        if (Speed.Length() > 0) Speed.Normalize();
+        Position += Speed * speedMagnitude * deltaTime;
 
         // check for boundary collision
         if (Position.X > MainGame.ScreenWidth - Texture.Width / 2)
@@ -72,16 +65,16 @@ public class Character
         if (Position.Y > MainGame.ScreenHeight - Texture.Height / 2)
         {
             Position.Y = MainGame.ScreenHeight - Texture.Height / 2;
-            Speed.Y = -Speed.Y * 0.97f;
+            //Speed.Y = -Speed.Y * 0.97f;
         }
         else if (Position.Y < Texture.Height / 2)
         {
             Position.Y = Texture.Height / 2;
-            Speed.Y = -Speed.Y * 0.97f;
+            //Speed.Y = -Speed.Y * 0.97f;
         }
 
         // trail array
-        trails[start] = Position;
+        trails[start] = (Position, Rotation);
         start++;
         if (count < size - 1) count++;
         if (start > size - 1) start = 0;
@@ -93,11 +86,14 @@ public class Character
         for (int i = 0; i < count; i++)
         {
             if (index > count) index = 0;
-            Vector2 pos = trails[index];
-            spriteBatch.Draw(Texture, pos - new Vector2(Texture.Width / 2, Texture.Height / 2), new Color(Color.CornflowerBlue, i * 10 + 10));
+            (Vector2 pos, float rot) = trails[index];
+            spriteBatch.Draw(Texture, pos, null, 
+                new Color(Color.CornflowerBlue, i * 10 + 10), rot + MathHelper.PiOver2,
+                new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
             index++;
         }
-        spriteBatch.Draw(Texture, Position, null, Color.White, 0f,
-            new Vector2(Texture.Width / 2, Texture.Height / 2), Vector2.One, SpriteEffects.None, 0f);
+        spriteBatch.Draw(Texture, Position, null,
+            Color.White, Rotation + MathHelper.PiOver2,
+            new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }
 }
