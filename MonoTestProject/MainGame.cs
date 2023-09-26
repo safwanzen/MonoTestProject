@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace MonoTestProject;
 
@@ -13,10 +14,14 @@ public class MainGame : Game
     Vector2 ballPosition;
     float ballSpeed;
 
+    Texture2D handTexture;
+
     Character character;
 
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+
+    private List<Particle> _particles = new();
 
     public MainGame()
     {
@@ -48,13 +53,32 @@ public class MainGame : Game
         // TODO: use this.Content to load your game content here
         character.Texture = Content.Load<Texture2D>("ball");
         ballTexture = Content.Load<Texture2D>("ball");
+        handTexture = Content.Load<Texture2D>("hand");
     }
+
+    double particleTimer = 0;
 
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-        character.Update(gameTime);
+
+        particleTimer += gameTime.ElapsedGameTime.TotalSeconds;
+
+        var mousestate = Mouse.GetState();
+        
+        if (mousestate.LeftButton == ButtonState.Pressed && particleTimer > 0.01)
+        {
+            particleTimer = 0;
+            _particles.Add(new Particle() { Texture = handTexture, Position = mousestate.Position.ToVector2() });
+        }
+
+        foreach (var particle in _particles)
+        {
+            particle.Update(gameTime);
+        }
+
+        //character.Update(gameTime);
         base.Update(gameTime);
     }
 
@@ -64,7 +88,11 @@ public class MainGame : Game
 
         // TODO: Add your drawing code here
         _spriteBatch.Begin();
-        character.Draw(_spriteBatch);
+        foreach (var particle in _particles)
+        {
+            particle.Draw(_spriteBatch);
+        }
+        //character.Draw(_spriteBatch);
         _spriteBatch.End();
 
         base.Draw(gameTime);
