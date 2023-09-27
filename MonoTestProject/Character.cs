@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace MonoTestProject;
 
@@ -14,19 +15,18 @@ public class Character
     private const float speedMagnitude = 500;
 
     // circular queue implementation
-    int trailSize = 5;
+    int trailSize = 4;
     int count = 0;
     int start = 0;
     public (Vector2, float)[] trails;
     
-    const double frameTime = 0.050;
-    double currTime = 0;
+    const float frameTime = 0.05f;
+    float currTime = frameTime;
 
-    int increment;
+    Random r = new Random();
 
     public Character()
     {
-        increment = 255 / trailSize;
         trails = new (Vector2, float)[trailSize];
     }
 
@@ -73,8 +73,14 @@ public class Character
         }
 
         // trail array
-        currTime += deltaTime;
+        //for (int i = 0; i < trails.Length; i++)
+        //{
+        //    (var pos, var life) = trails[i];
+        //    if (life <= 0) continue;
+        //    trails[i] = (pos, life - 0.05f);
+        //}
 
+        currTime += deltaTime;
         if (currTime > frameTime)
         {
             currTime = 0;
@@ -87,16 +93,16 @@ public class Character
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        int index = start;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < trails.Length; i++)
         {
-            if (index > count) index = 0;
-            (Vector2 pos, float rot) = trails[index];
-            spriteBatch.Draw(Texture, pos, null, 
-                Color.White, rot + MathHelper.PiOver2,
+            if (r.NextDouble() > 0.5) continue;
+            (Vector2 pos, float rot) = trails[i];
+            spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null, 
+                Color.White * 0.8f, rot + MathHelper.PiOver2,
                 new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
-            index++;
         }
+        // need to rotate sprite because it points up
+        // if it points to the right no need to rotate
         spriteBatch.Draw(Texture, Position, null,
             Color.White, Rotation + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);

@@ -39,26 +39,19 @@ public class MainGame : Game
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
-        ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 2,
-            _graphics.PreferredBackBufferHeight / 2);
-        ballSpeed = new Vector2();
-        character = new Character()
-        {
-            Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
-            Speed = new Vector2(300f, 0f),
-        };
+        
+        Console.WriteLine("initialize called");
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
+        Console.WriteLine("loadcontent called");
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         // TODO: use this.Content to load your game content here
         handTexture = Content.Load<Texture2D>("hand");
-        character.Texture = handTexture;
-        ballTexture = handTexture;//Content.Load<Texture2D>("ball");
-        
+        ballTexture = handTexture; //Content.Load<Texture2D>("ball");        
 
         var data = new Color[handTexture.Width * handTexture.Height];
         handTexture.GetData(data);
@@ -79,6 +72,16 @@ public class MainGame : Game
         ParticleTrailTexture = new Texture2D(GraphicsDevice, handTexture.Width, handTexture.Height);
         ParticleTrailTexture.SetData(data);
 
+        // init objects
+        ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 2,
+            _graphics.PreferredBackBufferHeight / 2);
+        ballSpeed = new Vector2();
+        character = new Character()
+        {
+            Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
+            Speed = new Vector2(300f, 0f),
+            Texture = handTexture,
+        };
     }
 
     double particleTimer = 0;
@@ -88,7 +91,6 @@ public class MainGame : Game
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-
 
         //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 

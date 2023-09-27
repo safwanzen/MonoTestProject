@@ -26,8 +26,8 @@ public class Particle
     (Vector2, float)[] trails = new (Vector2, float)[trailSize];
     int increment = 255 / trailSize;
 
-    private static double frameTime = 0.0333;
-    double currTime = 0;
+    private static float frameTime = 0.05f;
+    float currTime = frameTime;
 
     public Particle()
     {
@@ -64,16 +64,22 @@ public class Particle
         //}
 
         Direction.Y += gravity * deltaTime;
-        Position += Direction * speed * deltaTime;
+        Position += Direction * 25 * deltaTime;
         rotationAngle += rotationSpeed * deltaTime;
 
         // trail array
-        currTime += deltaTime;
+        for (int i = 0; i < trails.Length; i++)
+        {
+            (var pos, var life) = trails[i];
+            if (life <= 0) continue;
+            trails[i] = (pos, life - 0.05f);
+        }
 
+        currTime += deltaTime;
         if (currTime > frameTime)
         {
             currTime = 0;
-            trails[start] = (Position, rotationAngle);
+            trails[start] = (Position, .8f);
             start++;
             if (count < trailSize - 1) count++;
             if (start > trailSize - 1) start = 0;
@@ -83,12 +89,12 @@ public class Particle
     public void Draw(SpriteBatch spriteBatch)
     {
         int index = start;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < trailSize; i++)
         {
             if (index > count) index = 0;
-            (Vector2 pos, float rot) = trails[index];
+            (Vector2 pos, float life) = trails[index];
             spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null,
-                new Color(Color.Black, i * increment), rot + MathHelper.PiOver2,
+                Color.White * life, rotationAngle + MathHelper.PiOver2,
                 new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
             index++;
         }
