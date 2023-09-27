@@ -18,27 +18,47 @@ public class Enemy
     public Vector2 Direction = new(); // for now make it move slowly towards character
     public float Rotation = 0;
 
-    public Rectangle hitBox = new();
+    public Rectangle Hitbox = new();
+
+    public float HitPoints = 10;
+
+    public bool Hit = false;
 
     public Enemy()
     {
-
+        Texture = MainGame.handTexture;
+        var w = Texture.Width;
+        var h = Texture.Height;
+        Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
     }
 
     private void CheckParticleHit(Particle particle)
     {
+    }
 
+    public void TakeDamage()
+    {
+        HitPoints -= 1;
+        Console.WriteLine("took damage");
+        Hit = true;
     }
 
     public void Update(float deltaTime)
     {
         Position += Direction * speed * deltaTime;
+
+        Hitbox.X = (int)Position.X - Texture.Width / 2;
+        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
+        Hitbox.Width = Texture.Width;
+        Hitbox.Height = Texture.Height;
+
+        if (Hit) Hit = false;
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(Texture, Position, null,
-            Color.White, Rotation + MathHelper.PiOver2,
+            Hit ? Color.Red : Color.White, Rotation + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }
 }

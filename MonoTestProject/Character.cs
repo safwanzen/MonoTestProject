@@ -27,6 +27,7 @@ public class Character
 
     public Character()
     {
+        Texture = MainGame.handTexture;
         trails = new (Vector2, float)[trailSize];
     }
 
@@ -98,7 +99,7 @@ public class Character
             if (r.NextDouble() > 0.5) continue;
             (Vector2 pos, float rot) = trails[i];
             spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null, 
-                Color.White * 0.8f, rot + MathHelper.PiOver2,
+                Color.White * 0.5f, rot + MathHelper.PiOver2,
                 new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
         }
         // need to rotate sprite because it points up

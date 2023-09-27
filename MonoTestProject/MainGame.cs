@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MonoTestProject;
 
@@ -16,11 +17,12 @@ public class MainGame : Game
     Vector2 ballSpeed;
     float ballRotation;
 
-    Texture2D handTexture;
-    Texture2D particleTexture;
+    public static Texture2D handTexture;
+    public static Texture2D particleTexture;
     public static Texture2D ParticleTrailTexture;
 
     Character character;
+    Enemy enemy;
 
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
@@ -80,7 +82,11 @@ public class MainGame : Game
         {
             Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
             Speed = new Vector2(300f, 0f),
-            Texture = handTexture,
+        };
+
+        enemy = new Enemy()
+        {
+            Position = new Vector2(500, 200),
         };
     }
 
@@ -89,10 +95,11 @@ public class MainGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        //Console.WriteLine("update \t {0}", gameTime.TotalGameTime);
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 
         particleTimer += gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -102,6 +109,7 @@ public class MainGame : Game
         character.Rotation = (float)Math.Atan2(dist.Y, dist.X);
 
         character.Update(gameTime);
+        enemy.Update(deltaTime);
 
         if (mousestate.LeftButton == ButtonState.Pressed && particleTimer > 0.05)
         {
@@ -112,27 +120,31 @@ public class MainGame : Game
             var newDirection = dist + dirFluctuation;
             newDirection.Normalize();
 
-            _particles.Add(new Particle(direction: newDirection * 18, rotation: character.Rotation) { 
-                Texture = particleTexture, 
+            _particles.Add(new Particle(direction: newDirection, rotation: character.Rotation) { 
                 Position = character.Position /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */});
         }
 
         foreach (var particle in _particles)
         {
             particle.Update(gameTime);
+            particle.CheckHit(enemy);
         }
+
+        _particles = _particles.Where(x => !x.WasHit).ToList();
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
+        //Console.WriteLine("draw \t {0}", gameTime.TotalGameTime);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         // TODO: Add your drawing code here
         _spriteBatch.Begin();
 
         character.Draw(_spriteBatch);
+        enemy.Draw(_spriteBatch);
 
         foreach (var particle in _particles)
         {
