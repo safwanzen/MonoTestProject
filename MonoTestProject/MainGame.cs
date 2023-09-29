@@ -26,24 +26,19 @@ public class MainGame : Game
     public static SoundEffect BulletFireSound;
     public static List<SoundEffect> Sounds = new();
 
-    Character character;
-
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
-    private List<Bullet> _bullets = new();
+    public static List<Bullet> Bullets = new();
     public static List<Particle> Particles = new();
     public static List<Enemy> Enemies = new();
     public static List<Entity> Entities = new();
 
-    ButtonState prevLMBState = ButtonState.Released;
-    ButtonState prevRMBState = ButtonState.Released;
+    public static ButtonState PrevLMBState = ButtonState.Released;
+    public static ButtonState PrevRMBState = ButtonState.Released;
 
-    // charged shot
-    float maxChargeTime = .5f;
-    float currChargeTime = 0f;
-    bool fullyCharged = false;
-
+    Character character;
+    
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -114,7 +109,6 @@ public class MainGame : Game
         //Entities.Add(enemy);
     }
 
-    double shootParticleTimer = 0;
     Random random = new Random();
 
     protected override void Update(GameTime gameTime)
@@ -126,9 +120,6 @@ public class MainGame : Game
         var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         var mousestate = Mouse.GetState(Window);
-        var facingDirection = mousestate.Position.ToVector2() - character.Position;
-        if (facingDirection.Length() > 0) facingDirection.Normalize();
-        character.Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
 
         character.Update(deltaTime);
         
@@ -136,58 +127,8 @@ public class MainGame : Game
         {
             item.Update(deltaTime);
         }
-
-        shootParticleTimer += gameTime.ElapsedGameTime.TotalSeconds;
-        if (prevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer > 0.05)
-        {            
-            shootParticleTimer = 0;
-
-            var randAngle = character.Rotation + (float)random.NextDouble() * 0.3 - 0.15;
-            var dirFluctuation = new Vector2((float)Math.Cos(randAngle), (float)Math.Sin(randAngle));
-            var newDirection = facingDirection + dirFluctuation;
-            newDirection.Normalize();
-            
-            _bullets.Add(new Bullet(direction: newDirection, rotation: character.Rotation) { 
-                Position = character.Position /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */});
-
-            Sounds[2].Play();
-            
-        }
-
-        if (mousestate.LeftButton == ButtonState.Pressed)
-        {
-            currChargeTime += deltaTime;
-            fullyCharged = currChargeTime > maxChargeTime;
-        }
-
-        if (mousestate.LeftButton == ButtonState.Released)
-        {
-            // charged shot
-            if (fullyCharged)
-            {
-                fullyCharged = false;
-                _bullets.Add(new Bullet(direction: facingDirection, rotation: character.Rotation)
-                {
-                    Position = character.Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
-                    Speed = 1200
-                });
-                for (int i = 0; i < 10; i++)
-                {
-                    var p = new Particle(character.Position, character.Rotation + (float)random.NextDouble() * (float)MathHelper.Pi - (float)MathHelper.PiOver2, 0.3f)
-                    {
-                        Speed = 500
-                    };
-                    Particles.Add(p);
-                }
-                Sounds[6].Play();
-            }
-            else
-            {
-                currChargeTime = 0;
-            }
-        }
-
-        if (prevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed && shootParticleTimer > 0.05)
+        
+        if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
         {
             var e = new Enemy(mousestate.Position.ToVector2());
             Console.WriteLine("Enemy added {0}", e.GetHashCode());
@@ -205,9 +146,9 @@ public class MainGame : Game
             }
         }
 
-        for (int i = 0; i < _bullets.Count;)
+        for (int i = 0; i < Bullets.Count;)
         {
-            var particle = _bullets[i];
+            var particle = Bullets[i];
             if (particle.WasHit)
             {
                 for (int a = 0; a < 5; a++)
@@ -218,7 +159,7 @@ public class MainGame : Game
                     };
                     Particles.Add(p);
                 }
-                _bullets.RemoveAt(i);
+                Bullets.RemoveAt(i);
             }
             else
             {
@@ -233,8 +174,8 @@ public class MainGame : Game
         }
 
         // reset mouse
-        prevLMBState = mousestate.LeftButton;
-        prevRMBState = mousestate.RightButton;
+        PrevLMBState = mousestate.LeftButton;
+        PrevRMBState = mousestate.RightButton;
 
         base.Update(gameTime);
     }
@@ -259,7 +200,7 @@ public class MainGame : Game
             trail.Draw(_spriteBatch);
         }
 
-        foreach (var particle in _bullets)
+        foreach (var particle in Bullets)
         {
             particle.Draw(_spriteBatch);
         }

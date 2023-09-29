@@ -23,7 +23,15 @@ public class Character : Entity
     const float frameTime = 0.05f;
     float currTime = frameTime;
 
-    Random r = new Random();
+    Random random = new Random();
+
+    bool characterFlashing = false;
+    float flashTime = 0;
+    // charged shot
+    float maxChargeTime = 1.5f;
+    float currChargeTime = 0f;
+    bool fullyCharged = false;
+    double shootParticleTimer = 0;
 
     public Character()
     {
@@ -37,6 +45,11 @@ public class Character : Entity
         var kstate = Keyboard.GetState();
         //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+        var mousestate = Mouse.GetState();
+        var facingDirection = mousestate.Position.ToVector2() - Position;
+        if (facingDirection.Length() > 0) facingDirection.Normalize();
+        Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
+
         if (kstate.IsKeyDown(Keys.W)) { Speed.Y = -1; }
         else if (kstate.IsKeyDown(Keys.S)) { Speed.Y = 1; }
         else { Speed.Y = 0; }
@@ -44,6 +57,73 @@ public class Character : Entity
         if (kstate.IsKeyDown(Keys.A)) { Speed.X = -1; }
         else if (kstate.IsKeyDown(Keys.D)) { Speed.X = 1; }
         else { Speed.X = 0; }
+
+        shootParticleTimer -= deltaTime;
+        if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
+        {
+            shootParticleTimer = 0.05f;
+
+            var randAngle = Rotation + (float)random.NextDouble() * 0.3 - 0.15;
+            var dirFluctuation = new Vector2((float)Math.Cos(randAngle), (float)Math.Sin(randAngle));
+            var newDirection = facingDirection + dirFluctuation;
+            newDirection.Normalize();
+
+            MainGame.Bullets.Add(new Bullet(direction: newDirection, rotation: Rotation)
+            {
+                Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                Damage = 4
+            });
+
+            MainGame.Sounds[2].Play();
+
+        }
+
+        if (mousestate.LeftButton == ButtonState.Pressed)
+        {
+            currChargeTime += deltaTime;
+            flashTime -= deltaTime;
+            if (flashTime < 0)
+            {
+                characterFlashing = !characterFlashing;
+                if (currChargeTime >= maxChargeTime) flashTime = 0.03f;
+                else flashTime = 0.1f;
+                //else flashTime = 0.5f;
+            }
+
+            fullyCharged = currChargeTime > maxChargeTime;
+        }
+
+        if (mousestate.LeftButton == ButtonState.Released)
+        {
+            
+            // charged shot
+            if (fullyCharged)
+            {
+                fullyCharged = false;
+                shootParticleTimer = 0.2;
+                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+                {
+                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                    Speed = 1200,
+                    Damage = 12
+                });
+                for (int i = 0; i < 10; i++)
+                {
+                    var p = new Particle(Position, Rotation + (float)random.NextDouble() * (float)MathHelper.Pi - (float)MathHelper.PiOver2, 0.3f)
+                    {
+                        Speed = (float)random.NextDouble() * 400 + 100
+                    };
+                    MainGame.Particles.Add(p);
+                }
+                MainGame.Sounds[6].Play();
+            }
+            else
+            {
+                flashTime = 0.1f;
+                characterFlashing = false;
+                currChargeTime = 0;
+            }
+        }
 
         // physics
         //Speed.Y += MainGame.GravityAcceleration * deltaTime;
@@ -96,7 +176,7 @@ public class Character : Entity
     {
         for (int i = 0; i < trails.Length; i++)
         {
-            if (r.NextDouble() > 0.5) continue;
+            if (random.NextDouble() > 0.5) continue;
             (Vector2 pos, float rot) = trails[i];
             spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null, 
                 Color.White * 0.5f, rot + MathHelper.PiOver2,
@@ -105,7 +185,7 @@ public class Character : Entity
         // need to rotate sprite because it points up
         // if it points to the right no need to rotate
         spriteBatch.Draw(Texture, Position, null,
-            Color.White, Rotation + MathHelper.PiOver2,
+            !characterFlashing ? Color.White : Color.OrangeRed, Rotation + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }
 }

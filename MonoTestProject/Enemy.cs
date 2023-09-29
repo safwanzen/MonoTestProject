@@ -26,6 +26,7 @@ public class Enemy : Entity
     
     private const float damageTime = 0.033f;
     private float damageFlashTimer = 0;
+    private bool oneHitKill = true;
 
     public Enemy(Vector2 position)
     {
@@ -40,9 +41,9 @@ public class Enemy : Entity
     {
     }
 
-    public void TakeDamage()
+    public bool TakeDamage(float damage)
     {
-        HitPoints -= 1;
+        HitPoints -= damage;
         //Console.WriteLine("took damage");
         Hit = true;
         damageFlashTimer = damageTime;
@@ -60,7 +61,10 @@ public class Enemy : Entity
                 MainGame.Particles.Add(p);
             }
             MainGame.Enemies.Remove(this);
+            return true;
         }
+        oneHitKill = false;
+        return false;
     }
 
     public override void Update(float deltaTime)

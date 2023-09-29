@@ -8,12 +8,20 @@ using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
+public enum BulletType
+{
+    Normal,
+    Charged
+}
+
 public class Bullet : Entity
 {
     public Vector2 Position;
     public Texture2D Texture;
     public Vector2 Direction;
     public float Speed = 600;
+    public float Damage = 1;
+    public BulletType BulletType = BulletType.Normal;
 
     private float rotationSpeed;
     private float rotationAngle;
@@ -66,8 +74,9 @@ public class Bullet : Entity
         if (WasHit) return;
         if (Hitbox.Intersects(enemy.Hitbox))
         {
-            enemy.TakeDamage();
-            WasHit = true;
+            var enemyDestroyed = enemy.TakeDamage(Damage);
+            if (BulletType == BulletType.Charged) WasHit = !enemyDestroyed;
+            else if (BulletType == BulletType.Normal) WasHit = true;
         }
         else if (CheckOutOfBounds())
         {
