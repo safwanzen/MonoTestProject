@@ -8,151 +8,71 @@ using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
-public class Particle
+public enum FadeEffect
 {
-    public Vector2 Position;
-    public Texture2D Texture;
-    public Vector2 Direction;
+    None,
+    FadeOut,
+    FadeOutScale
+}
 
-    private float speed = 600;
-    private float rotationSpeed;
-    private float rotationAngle;
-    private float gravity = 0;
+public class Particle : Entity
+{
+    public Vector2 Position = Vector2.Zero;
+    public float Speed = 0;
 
-    public Rectangle Hitbox = new();
+    private float _rotationRad = 0;
 
-    // circular queue implementation
-    private static int trailSize = 5;
-    int count = 0;
-    int start = 0;
-    (Vector2, float)[] trails = new (Vector2, float)[trailSize];
-    int increment = 255 / trailSize;
-
-    private static float frameTime = 0.05f;
-    float currTime = frameTime;
-
-    public bool WasHit = false;
-    Random r = new Random();
-
-    public Particle()
-    {
-        Random _r = new Random();
-        Direction.Y = (float)r.NextDouble() * -.1f;
-        Direction.X = (float)r.NextDouble() - .5f;
-        rotationSpeed = (float)r.NextDouble() * 90 - 45;
-        gravity = MainGame.GravityAcceleration;
-        //var angle = r.NextDouble() * Math.PI;
-        //var speed = 5f;
-        //Speed = new Vector2((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed);
-    }
-
-    public Particle(Vector2 direction, float rotation)
-    {
-        //Random r = new Random();
-        //rotationSpeed = (float)r.NextDouble() * 90 - 45;
-        Direction = direction;
-        rotationAngle = rotation;
-        Texture = MainGame.handTexture;
-        var w = Texture.Width;
-        var h = Texture.Height;
-        Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
-    }
-
-    float blinkTimer = 0;
-    bool blink = false;
-
-    public void CheckHit(Enemy enemy)
-    {
-        if (WasHit) return;
-        if (Hitbox.Intersects(enemy.Hitbox))
+    public float RotationRad
+    { 
+        get => _rotationRad;
+        set
         {
-            enemy.TakeDamage();
-            WasHit = true;
-        }
-        else if (CheckOutOfBounds())
-        {
-            WasHit = true;
-        }
-        /*
-        var randomangle = r.NextDouble() * MathHelper.Pi;
-        var randomdir = new Vector2((float)Math.Cos(randomangle), (float)Math.Sin(randomangle));
-        randomdir.Normalize();
-        Direction = -Direction;// + randomdir;
-        //Direction.Normalize();
-        rotationAngle -= MathHelper.Pi;
-        */
+            _rotationRad = value;
+            direction = new Vector2((float)Math.Cos(value), (float)Math.Sin(value));
+            direction.Normalize();
+        } 
+    }
+    public bool IsAlive = true;
+
+    private Vector2 direction;
+    private float lifetime = 0f;
+    private float initialLife;
+    private float scale = 1f;
+
+    FadeEffect fadeEffect = FadeEffect.FadeOut;
+
+    public Particle(Vector2 position, float rotation, float lifetime, FadeEffect fadeEffect)
+    {
+        Position = position;
+        RotationRad = rotation;
+        initialLife = lifetime;
+        this.lifetime = lifetime;
+        this.fadeEffect = fadeEffect;
     }
 
-    private bool CheckOutOfBounds()
+    public Particle(Vector2 position, float rotation, float lifetime)
     {
-        return Position.X > MainGame.ScreenWidth || Position.X < 0
-            || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
+        Position = position;
+        RotationRad = rotation;
+        initialLife = lifetime;
+        this.lifetime = lifetime;
     }
 
-    public void Update(GameTime gameTime)
+    public override void Update(float dt)
     {
-        var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        Direction.Y += gravity * deltaTime;
-        Position += Direction * speed * deltaTime;
-        rotationAngle += rotationSpeed * deltaTime;
-
-        //DecayTrail();
-        //AddTrail(deltaTime);
-
-        currTime += deltaTime;
-        if (currTime > frameTime)
+        lifetime -= dt;
+        Position += Speed * direction * dt;
+        if (fadeEffect == FadeEffect.FadeOutScale)
         {
-            currTime = 0;
-            MainGame.Trails.Add(new ParticleTrail(Position, rotationAngle, 0.3f));
+            scale += dt * 2;
         }
-
-        Hitbox.X = (int)Position.X - Texture.Width / 2;
-        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
-        Hitbox.Width = Texture.Width;
-        Hitbox.Height = Texture.Height;
+        IsAlive = lifetime > 0f;
     }
 
-    private void DecayTrail()
+    public override void Draw(SpriteBatch spriteBatch)
     {
-        // trail array
-        for (int i = 0; i < trails.Length; i++)
-        {
-            (var pos, var life) = trails[i];
-            if (life <= 0) continue;
-            trails[i] = (pos, life - 0.05f);
-        }
-    }
 
-    private void AddTrail(float deltaTime)
-    {
-        currTime += deltaTime;
-        if (currTime > frameTime)
-        {
-            currTime = 0;
-            trails[start] = (Position, .8f);
-            start++;
-            if (count < trailSize - 1) count++;
-            if (start > trailSize - 1) start = 0;
-        }
-    }
-
-    public void Draw(SpriteBatch spriteBatch)
-    {
-        // draw trail
-        /*
-        int index = start;
-        for (int i = 0; i < trailSize; i++)
-        {
-            if (index > count) index = 0;
-            (Vector2 pos, float life) = trails[index];
-            spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null,
-                Color.White * life, rotationAngle + MathHelper.PiOver2,
-                new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
-            index++;
-        }
-        */
-
-        spriteBatch.Draw(MainGame.particleTexture, Position, null, Color.White, rotationAngle + MathHelper.PiOver2,
-            new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+        spriteBatch.Draw(MainGame.ParticleTrailTexture, Position, null, Color.White * (lifetime / initialLife),
+            RotationRad + MathHelper.PiOver2, new Vector2(16, 22), new Vector2(scale), SpriteEffects.None, 0f);
     }
 }

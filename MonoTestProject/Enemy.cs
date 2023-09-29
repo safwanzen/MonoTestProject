@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
-public class Enemy
+public class Enemy : Entity
 {
     private float speed = 0;
     private Vector2 origin = new();
@@ -27,15 +27,16 @@ public class Enemy
     private const float damageTime = 0.033f;
     private float damageFlashTimer = 0;
 
-    public Enemy()
+    public Enemy(Vector2 position)
     {
         Texture = MainGame.handTexture;
         var w = Texture.Width;
         var h = Texture.Width;
+        Position = position;
         Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
     }
 
-    private void CheckParticleHit(Particle particle)
+    private void CheckParticleHit(Bullet particle)
     {
     }
 
@@ -45,10 +46,24 @@ public class Enemy
         //Console.WriteLine("took damage");
         Hit = true;
         damageFlashTimer = damageTime;
-        MainGame.BulletHitSound.Play();
+        MainGame.Sounds[1].Play();
+        if (HitPoints <= 0)
+        {
+            Random random = new();
+            for (int a = 0; a < 10; a++)
+            {
+                var p = new Particle(Position, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.5f)
+                {
+                    Speed = (float)random.NextDouble() * 500 + 50
+                };
+                MainGame.Sounds[5].Play(0.1f, 0, 0);
+                MainGame.Particles.Add(p);
+            }
+            MainGame.Enemies.Remove(this);
+        }
     }
 
-    public void Update(float deltaTime)
+    public override void Update(float deltaTime)
     {
         Position += Direction * speed * deltaTime;
 
@@ -67,7 +82,7 @@ public class Enemy
         }
     }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(Hit ? MainGame.particleTexture : Texture, Position, null,
             Color.White, Rotation + MathHelper.PiOver2,

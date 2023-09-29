@@ -5,7 +5,7 @@ using System;
 
 namespace MonoTestProject;
 
-public class Character
+public class Character : Entity
 {
     public Texture2D Texture;
     public Vector2 Position;
@@ -32,10 +32,10 @@ public class Character
     }
 
 
-    public void Update(GameTime gameTime)
+    public override void Update(float deltaTime)
     {
         var kstate = Keyboard.GetState();
-        var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         if (kstate.IsKeyDown(Keys.W)) { Speed.Y = -1; }
         else if (kstate.IsKeyDown(Keys.S)) { Speed.Y = 1; }
@@ -92,7 +92,7 @@ public class Character
         }
     }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public override void Draw(SpriteBatch spriteBatch)
     {
         for (int i = 0; i < trails.Length; i++)
         {
