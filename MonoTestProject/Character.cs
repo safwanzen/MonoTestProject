@@ -105,7 +105,8 @@ public class Character : Entity
                 {
                     Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
                     Speed = 1200,
-                    Damage = 12
+                    Damage = 10,
+                    BulletType = BulletType.Charged
                 });
                 for (int i = 0; i < 10; i++)
                 {
