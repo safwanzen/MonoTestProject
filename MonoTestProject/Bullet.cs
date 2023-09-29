@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,6 +23,19 @@ public class Bullet : Entity
     public float Speed = 600;
     public float Damage = 1;
     public BulletType BulletType = BulletType.Normal;
+
+    public bool Wavy = false;
+        
+    private float _angle;
+    public float Angle
+    {
+        get => _angle;
+        set
+        {
+            _angle = value;
+            Direction = new Vector2((float)Math.Cos(value), (float)Math.Sin(value));
+        }
+    }
 
     private float rotationSpeed;
     private float rotationAngle;
@@ -64,33 +78,43 @@ public class Bullet : Entity
         var w = Texture.Width;
         var h = Texture.Height;
         Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
+        
+        cosA = (float)Math.Cos(rotationAngle);
+        sinA = (float)Math.Sin(rotationAngle);
     }
 
     float blinkTimer = 0;
     bool blink = false;
 
-    public void CheckHit(Enemy enemy)
+    private void CheckHit()
     {
         if (WasHit) return;
-        if (Hitbox.Intersects(enemy.Hitbox))
-        {
-            var enemyDestroyed = enemy.TakeDamage(Damage);
-            if (BulletType == BulletType.Charged) WasHit = !enemyDestroyed;
-            else if (BulletType == BulletType.Normal) WasHit = true;
-        }
-        else if (CheckOutOfBounds())
+        if (CheckOutOfBounds())
         {
             MainGame.Sounds[0].Play();
             WasHit = true;
         }
-        /*
-        var randomangle = r.NextDouble() * MathHelper.Pi;
-        var randomdir = new Vector2((float)Math.Cos(randomangle), (float)Math.Sin(randomangle));
-        randomdir.Normalize();
-        Direction = -Direction;// + randomdir;
-        //Direction.Normalize();
-        rotationAngle -= MathHelper.Pi;
-        */
+        else
+        {
+            CheckEnemyCollision();
+        }
+    }
+
+    private void CheckEnemyCollision()
+    {
+        for (int a = 0; a < MainGame.Enemies.Count;)
+        {
+            Enemy enemy = MainGame.Enemies[a];
+            if (!Hitbox.Intersects(enemy.Hitbox))
+            {
+                a++;
+                continue;
+            }
+            bool enemyDestroyed = enemy.TakeDamage(Damage);
+            if (BulletType == BulletType.Charged) WasHit = !enemyDestroyed;
+            else if (BulletType == BulletType.Normal) WasHit = true;
+            break;
+        }
     }
 
     private bool CheckOutOfBounds()
@@ -99,14 +123,30 @@ public class Bullet : Entity
             || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
     }
 
+    public float distanceTravelled = MathHelper.PiOver2;
+    float cosA;
+    float sinA;
+
     public override void Update(float deltaTime)
     {
-        Direction.Y += gravity * deltaTime;
-        Position += Direction * Speed * deltaTime;
-        rotationAngle += rotationSpeed * deltaTime;
+        if (Wavy)
+        {
+            // wave trajectory
+            distanceTravelled += deltaTime * 20;
+            float t = Speed * deltaTime;
+            var sinT = (float)Math.Sin(distanceTravelled);
+            Position.X += cosA * t - sinA * sinT * 10;
+            Position.Y += sinA * t + cosA * sinT * 10;
+            //Position.X += Speed * deltaTime;
+            //Position.Y += sinDist * 10;
+        }
+        else
+        {
+            // straight course
+            Position += Direction * Speed * deltaTime;
+        }
 
-        //DecayTrail();
-        //AddTrail(deltaTime);
+        rotationAngle += rotationSpeed * deltaTime;
 
         currTime += deltaTime;
         if (currTime > frameTime)
@@ -123,6 +163,8 @@ public class Bullet : Entity
         Hitbox.Y = (int)Position.Y - Texture.Height / 2;
         Hitbox.Width = Texture.Width;
         Hitbox.Height = Texture.Height;
+
+        CheckHit();
     }
 
     private void DecayTrail()

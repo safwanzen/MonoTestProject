@@ -164,11 +164,6 @@ public class MainGame : Game
             else
             {
                 particle.Update(deltaTime);
-                for (int a = 0; a < Enemies.Count;)
-                {
-                    particle.CheckHit(Enemies[a]);
-                    a++;
-                }
                 i++;
             }
         }

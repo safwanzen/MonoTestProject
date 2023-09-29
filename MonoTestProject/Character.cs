@@ -28,7 +28,7 @@ public class Character : Entity
     bool characterFlashing = false;
     float flashTime = 0;
     // charged shot
-    float maxChargeTime = 1.5f;
+    float maxChargeTime = .5f;
     float currChargeTime = 0f;
     bool fullyCharged = false;
     double shootParticleTimer = 0;
@@ -104,9 +104,27 @@ public class Character : Entity
                 MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
                 {
                     Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
-                    Speed = 1200,
+                    Speed = 1000,
                     Damage = 10,
                     BulletType = BulletType.Charged
+                });
+                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+                {
+                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                    Speed = 1000,
+                    Damage = 4,
+                    //BulletType = BulletType.Charged,
+                    Wavy = true,
+                    distanceTravelled = MathHelper.PiOver2
+                });
+                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+                {
+                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                    Speed = 1000,
+                    Damage = 4,
+                    //BulletType = BulletType.Charged,
+                    Wavy = true,
+                    distanceTravelled = -MathHelper.PiOver2
                 });
                 for (int i = 0; i < 10; i++)
                 {
