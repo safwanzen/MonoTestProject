@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -21,6 +22,9 @@ public class MainGame : Game
     public static Texture2D particleTexture;
     public static Texture2D ParticleTrailTexture;
 
+    public static SoundEffect BulletHitSound;
+    public static SoundEffect BulletFireSound;
+
     Character character;
     Enemy enemy;
 
@@ -28,7 +32,8 @@ public class MainGame : Game
     private SpriteBatch _spriteBatch;
 
     private List<Particle> _particles = new();
-
+    public static List<ParticleTrail> Trails = new();
+    
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -44,6 +49,7 @@ public class MainGame : Game
         
         Console.WriteLine("initialize called");
         base.Initialize();
+        SoundEffect.MasterVolume = .3f;
     }
 
     protected override void LoadContent()
@@ -54,6 +60,8 @@ public class MainGame : Game
         // TODO: use this.Content to load your game content here
         handTexture = Content.Load<Texture2D>("hand");
         ballTexture = handTexture; //Content.Load<Texture2D>("ball");        
+        BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
+        BulletFireSound = Content.Load<SoundEffect>("Audio/ST01_00_00002");
 
         var data = new Color[handTexture.Width * handTexture.Height];
         handTexture.GetData(data);
@@ -90,7 +98,7 @@ public class MainGame : Game
         };
     }
 
-    double particleTimer = 0;
+    double shootParticleTimer = 0;
     Random random = new Random();
 
     protected override void Update(GameTime gameTime)
@@ -101,7 +109,6 @@ public class MainGame : Game
 
         var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
                 
-        particleTimer += gameTime.ElapsedGameTime.TotalSeconds;
 
         var mousestate = Mouse.GetState(Window);
         var dist = mousestate.Position.ToVector2() - character.Position;
@@ -111,9 +118,10 @@ public class MainGame : Game
         character.Update(gameTime);
         enemy.Update(deltaTime);
 
-        if (mousestate.LeftButton == ButtonState.Pressed && particleTimer > 0.05)
+        shootParticleTimer += gameTime.ElapsedGameTime.TotalSeconds;
+        if (mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer > 0.05)
         {
-            particleTimer = 0;
+            shootParticleTimer = 0;
 
             var randAngle = character.Rotation + (float)random.NextDouble() * 0.3 - 0.15;
             var dirFluctuation = new Vector2((float)Math.Cos(randAngle), (float)Math.Sin(randAngle));
@@ -122,15 +130,32 @@ public class MainGame : Game
 
             _particles.Add(new Particle(direction: newDirection, rotation: character.Rotation) { 
                 Position = character.Position /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */});
+
+            BulletFireSound.Play();
         }
 
-        foreach (var particle in _particles)
+        for (int i = 0; i < Trails.Count;)
         {
-            particle.Update(gameTime);
-            particle.CheckHit(enemy);
+            var trail = Trails[i];
+            if (!trail.IsAlive) Trails.RemoveAt(i);
+            else
+            {
+                trail.Update(deltaTime);
+                i++;
+            }
         }
 
-        _particles = _particles.Where(x => !x.WasHit).ToList();
+        for (int i = 0; i < _particles.Count;)
+        {
+            var particle = _particles[i];
+            if (particle.WasHit) _particles.RemoveAt(i);
+            else
+            {
+                particle.Update(gameTime);
+                particle.CheckHit(enemy);
+                i++;
+            }
+        }
 
         base.Update(gameTime);
     }
@@ -145,6 +170,11 @@ public class MainGame : Game
 
         character.Draw(_spriteBatch);
         enemy.Draw(_spriteBatch);
+
+        foreach(var trail in Trails)
+        {
+            trail.Draw(_spriteBatch);
+        }
 
         foreach (var particle in _particles)
         {

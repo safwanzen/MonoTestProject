@@ -13,6 +13,36 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Audio/MMX3_SE_00044.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/MMX3_SE_00044.wav
+
+#begin Audio/PL00_U_00027.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/PL00_U_00027.wav
+
+#begin Audio/PL02_U_00020.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/PL02_U_00020.wav
+
+#begin Audio/ST01_00_00002.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/ST01_00_00002.wav
+
+#begin Audio/ST01_00_00003.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/ST01_00_00003.wav
+
 #begin ball.png
 /importer:TextureImporter
 /processor:TextureProcessor

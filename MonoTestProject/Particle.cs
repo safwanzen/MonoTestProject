@@ -64,9 +64,15 @@ public class Particle
     public void CheckHit(Enemy enemy)
     {
         if (WasHit) return;
-        if (!Hitbox.Intersects(enemy.Hitbox)) return;
-        if (!CheckOutOfBounds()) return;
-        WasHit = true;
+        if (Hitbox.Intersects(enemy.Hitbox))
+        {
+            enemy.TakeDamage();
+            WasHit = true;
+        }
+        else if (CheckOutOfBounds())
+        {
+            WasHit = true;
+        }
         /*
         var randomangle = r.NextDouble() * MathHelper.Pi;
         var randomdir = new Vector2((float)Math.Cos(randomangle), (float)Math.Sin(randomangle));
@@ -75,13 +81,12 @@ public class Particle
         //Direction.Normalize();
         rotationAngle -= MathHelper.Pi;
         */
-        enemy.TakeDamage();
     }
 
     private bool CheckOutOfBounds()
     {
-        return Position.X > 500 || Position.X < -10
-            || Position.Y < -10 || Position.Y > 500;
+        return Position.X > MainGame.ScreenWidth || Position.X < 0
+            || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
     }
 
     public void Update(GameTime gameTime)
@@ -91,6 +96,24 @@ public class Particle
         Position += Direction * speed * deltaTime;
         rotationAngle += rotationSpeed * deltaTime;
 
+        //DecayTrail();
+        //AddTrail(deltaTime);
+
+        currTime += deltaTime;
+        if (currTime > frameTime)
+        {
+            currTime = 0;
+            MainGame.Trails.Add(new ParticleTrail(Position, rotationAngle, 0.3f));
+        }
+
+        Hitbox.X = (int)Position.X - Texture.Width / 2;
+        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
+        Hitbox.Width = Texture.Width;
+        Hitbox.Height = Texture.Height;
+    }
+
+    private void DecayTrail()
+    {
         // trail array
         for (int i = 0; i < trails.Length; i++)
         {
@@ -98,7 +121,10 @@ public class Particle
             if (life <= 0) continue;
             trails[i] = (pos, life - 0.05f);
         }
+    }
 
+    private void AddTrail(float deltaTime)
+    {
         currTime += deltaTime;
         if (currTime > frameTime)
         {
@@ -108,15 +134,12 @@ public class Particle
             if (count < trailSize - 1) count++;
             if (start > trailSize - 1) start = 0;
         }
-
-        Hitbox.X = (int)Position.X - Texture.Width / 2;
-        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
-        Hitbox.Width = Texture.Width;
-        Hitbox.Height = Texture.Height;
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
+        // draw trail
+        /*
         int index = start;
         for (int i = 0; i < trailSize; i++)
         {
@@ -127,8 +150,9 @@ public class Particle
                 new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
             index++;
         }
+        */
 
-        spriteBatch.Draw(Texture, Position, null, Color.Wheat, rotationAngle + MathHelper.PiOver2,
+        spriteBatch.Draw(MainGame.particleTexture, Position, null, Color.White, rotationAngle + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }
 }

@@ -23,12 +23,15 @@ public class Enemy
     public float HitPoints = 10;
 
     public bool Hit = false;
+    
+    private const float damageTime = 0.033f;
+    private float damageFlashTimer = 0;
 
     public Enemy()
     {
         Texture = MainGame.handTexture;
         var w = Texture.Width;
-        var h = Texture.Height;
+        var h = Texture.Width;
         Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
     }
 
@@ -39,8 +42,10 @@ public class Enemy
     public void TakeDamage()
     {
         HitPoints -= 1;
-        Console.WriteLine("took damage");
+        //Console.WriteLine("took damage");
         Hit = true;
+        damageFlashTimer = damageTime;
+        MainGame.BulletHitSound.Play();
     }
 
     public void Update(float deltaTime)
@@ -52,13 +57,20 @@ public class Enemy
         Hitbox.Width = Texture.Width;
         Hitbox.Height = Texture.Height;
 
-        if (Hit) Hit = false;
+        if (Hit && damageFlashTimer > 0)
+        {
+            damageFlashTimer -= deltaTime;
+        }
+        else
+        {
+            Hit = false;
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(Texture, Position, null,
-            Hit ? Color.Red : Color.White, Rotation + MathHelper.PiOver2,
+        spriteBatch.Draw(Hit ? MainGame.particleTexture : Texture, Position, null,
+            Color.White, Rotation + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }
 }
