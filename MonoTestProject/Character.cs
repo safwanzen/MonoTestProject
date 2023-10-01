@@ -68,7 +68,7 @@ public class Character : Entity
             var newDirection = facingDirection + dirFluctuation;
             newDirection.Normalize();
 
-            MainGame.Bullets.Add(new Bullet(direction: newDirection, rotation: Rotation)
+            MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
             {
                 Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
                 Damage = 4
@@ -95,7 +95,6 @@ public class Character : Entity
 
         if (mousestate.LeftButton == ButtonState.Released)
         {
-            
             // charged shot
             if (fullyCharged)
             {
@@ -105,26 +104,26 @@ public class Character : Entity
                 {
                     Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
                     Speed = 1000,
-                    Damage = 10,
+                    Damage = 12,
                     BulletType = BulletType.Charged
                 });
                 MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
                 {
-                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                    Position = Position - facingDirection * 5, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
                     Speed = 1000,
                     Damage = 4,
                     //BulletType = BulletType.Charged,
                     Wavy = true,
-                    distanceTravelled = MathHelper.PiOver2
+                    phase = MathHelper.PiOver2
                 });
                 MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
                 {
-                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                    Position = Position - facingDirection * 5, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
                     Speed = 1000,
                     Damage = 4,
                     //BulletType = BulletType.Charged,
                     Wavy = true,
-                    distanceTravelled = -MathHelper.PiOver2
+                    phase = -MathHelper.PiOver2
                 });
                 for (int i = 0; i < 10; i++)
                 {
@@ -132,7 +131,7 @@ public class Character : Entity
                     {
                         Speed = (float)random.NextDouble() * 400 + 100
                     };
-                    MainGame.Particles.Add(p);
+                    MainGame.Entities.Add(p);
                 }
                 MainGame.Sounds[6].Play();
             }

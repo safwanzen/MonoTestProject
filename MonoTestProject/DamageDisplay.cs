@@ -8,14 +8,7 @@ using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
-public enum FadeEffect
-{
-    None,
-    FadeOut,
-    FadeOutScale
-}
-
-public class Particle : Entity
+public class DamageParticle : Entity
 {
     public Vector2 Position = Vector2.Zero;
     public float Speed = 0;
@@ -35,12 +28,13 @@ public class Particle : Entity
 
     private Vector2 direction;
     private float lifetime = 0f;
+    private string text;
     private float initialLife;
     private float scale = 1f;
 
     FadeEffect fadeEffect = FadeEffect.FadeOut;
 
-    public Particle(Vector2 position, float rotation, float lifetime, FadeEffect fadeEffect)
+    public DamageParticle(Vector2 position, float rotation, float lifetime, FadeEffect fadeEffect)
     {
         Position = position;
         RotationRad = rotation;
@@ -49,29 +43,24 @@ public class Particle : Entity
         this.fadeEffect = fadeEffect;
     }
 
-    public Particle(Vector2 position, float rotation, float lifetime)
+    public DamageParticle(Vector2 position, float rotation, float lifetime, string text)
     {
         Position = position;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
+        this.text = text;
     }
 
     public override void Update(float dt)
     {
         lifetime -= dt;
-        Position += Speed * direction * dt;
-        if (fadeEffect == FadeEffect.FadeOutScale)
-        {
-            scale += dt * 2;
-        }
+        if (lifetime > initialLife * 0.75) Position += Speed * direction * dt;
         IsAlive = lifetime > 0f;
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-
-        spriteBatch.Draw(MainGame.ParticleTrailTexture, Position, null, Color.White * (lifetime / initialLife),
-            RotationRad + MathHelper.PiOver2, new Vector2(16, 22), new Vector2(scale), SpriteEffects.None, 0f);
+        spriteBatch.DrawString(MainGame.Font, text, Position, Color.AntiqueWhite);
     }
 }

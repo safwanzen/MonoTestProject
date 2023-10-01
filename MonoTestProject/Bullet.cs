@@ -39,16 +39,8 @@ public class Bullet : Entity
 
     private float rotationSpeed;
     private float rotationAngle;
-    private float gravity = 0;
 
     public Rectangle Hitbox = new();
-
-    // circular queue implementation
-    private static int trailSize = 5;
-    int count = 0;
-    int start = 0;
-    (Vector2, float)[] trails = new (Vector2, float)[trailSize];
-    int increment = 255 / trailSize;
 
     private static float frameTime = 0.05f;
     float currTime = frameTime;
@@ -56,13 +48,16 @@ public class Bullet : Entity
     public bool WasHit = false;
     Random r = new Random();
 
+    public float phase = MathHelper.PiOver2;
+    float cosA;
+    float sinA;
+
     public Bullet()
     {
         Random _r = new Random();
         Direction.Y = (float)r.NextDouble() * -.1f;
         Direction.X = (float)r.NextDouble() - .5f;
         rotationSpeed = (float)r.NextDouble() * 90 - 45;
-        gravity = MainGame.GravityAcceleration;
         //var angle = r.NextDouble() * Math.PI;
         //var speed = 5f;
         //Speed = new Vector2((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed);
@@ -82,9 +77,6 @@ public class Bullet : Entity
         cosA = (float)Math.Cos(rotationAngle);
         sinA = (float)Math.Sin(rotationAngle);
     }
-
-    float blinkTimer = 0;
-    bool blink = false;
 
     private void CheckHit()
     {
@@ -123,22 +115,20 @@ public class Bullet : Entity
             || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
     }
 
-    public float distanceTravelled = MathHelper.PiOver2;
-    float cosA;
-    float sinA;
 
     public override void Update(float deltaTime)
     {
         if (Wavy)
         {
             // wave trajectory
-            distanceTravelled += deltaTime * 20;
-            float t = Speed * deltaTime;
-            var sinT = (float)Math.Sin(distanceTravelled);
-            Position.X += cosA * t - sinA * sinT * 10;
-            Position.Y += sinA * t + cosA * sinT * 10;
-            //Position.X += Speed * deltaTime;
-            //Position.Y += sinDist * 10;
+            phase += deltaTime * 20;
+            //float t = Speed * deltaTime;
+            var sinT = (float)Math.Sin(phase);
+            //var cosT = (float)Math.Cos(distanceTravelled);
+            var yAmp = 10f;
+            var xAmp = 5f;
+            Position.X += xAmp * cosA * sinT + yAmp * sinA * sinT + Speed * deltaTime * Direction.X;
+            Position.Y += xAmp * sinA * sinT - yAmp * cosA * sinT + Speed * deltaTime * Direction.Y;
         }
         else
         {
@@ -152,7 +142,7 @@ public class Bullet : Entity
         if (currTime > frameTime)
         {
             currTime = 0;
-            MainGame.Particles
+            MainGame.Entities
                 .Add(new Particle(Position, rotationAngle, 0.2f, FadeEffect.FadeOutScale)
                 {
                     Speed = Speed / 5
@@ -167,46 +157,8 @@ public class Bullet : Entity
         CheckHit();
     }
 
-    private void DecayTrail()
-    {
-        // trail array
-        for (int i = 0; i < trails.Length; i++)
-        {
-            (var pos, var life) = trails[i];
-            if (life <= 0) continue;
-            trails[i] = (pos, life - 0.05f);
-        }
-    }
-
-    private void AddTrail(float deltaTime)
-    {
-        currTime += deltaTime;
-        if (currTime > frameTime)
-        {
-            currTime = 0;
-            trails[start] = (Position, .8f);
-            start++;
-            if (count < trailSize - 1) count++;
-            if (start > trailSize - 1) start = 0;
-        }
-    }
-
     public override void Draw(SpriteBatch spriteBatch)
     {
-        // draw trail
-        /*
-        int index = start;
-        for (int i = 0; i < trailSize; i++)
-        {
-            if (index > count) index = 0;
-            (Vector2 pos, float life) = trails[index];
-            spriteBatch.Draw(MainGame.ParticleTrailTexture, pos, null,
-                Color.White * life, rotationAngle + MathHelper.PiOver2,
-                new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
-            index++;
-        }
-        */
-
         spriteBatch.Draw(MainGame.particleTexture, Position, null, Color.White, rotationAngle + MathHelper.PiOver2,
             new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
     }

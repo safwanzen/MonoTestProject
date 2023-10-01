@@ -30,12 +30,13 @@ public class MainGame : Game
     private SpriteBatch _spriteBatch;
 
     public static List<Bullet> Bullets = new();
-    public static List<Particle> Particles = new();
     public static List<Enemy> Enemies = new();
     public static List<Entity> Entities = new();
 
     public static ButtonState PrevLMBState = ButtonState.Released;
     public static ButtonState PrevRMBState = ButtonState.Released;
+
+    public static SpriteFont Font;
 
     Character character;
     
@@ -63,6 +64,7 @@ public class MainGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         // TODO: use this.Content to load your game content here
+        Font = Content.Load<SpriteFont>("TextFont");
         handTexture = Content.Load<Texture2D>("hand");
         ballTexture = handTexture; //Content.Load<Texture2D>("ball");        
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
@@ -135,13 +137,13 @@ public class MainGame : Game
             Enemies.Add(e);
         }
 
-        for (int i = 0; i < Particles.Count;)
+        for (int i = 0; i < Entities.Count;)
         {
-            var trail = Particles[i];
-            if (!trail.IsAlive) Particles.RemoveAt(i);
+            var entity = Entities[i];
+            if (!entity.IsAlive) Entities.RemoveAt(i);
             else
             {
-                trail.Update(deltaTime);
+                entity.Update(deltaTime);
                 i++;
             }
         }
@@ -157,7 +159,7 @@ public class MainGame : Game
                     {
                         Speed = 600
                     };
-                    Particles.Add(p);
+                    Entities.Add(p);
                 }
                 Bullets.RemoveAt(i);
             }
@@ -190,7 +192,7 @@ public class MainGame : Game
             entity.Draw(_spriteBatch);
         }
 
-        foreach(var trail in Particles)
+        foreach(var trail in Entities)
         {
             trail.Draw(_spriteBatch);
         }
@@ -202,6 +204,8 @@ public class MainGame : Game
 
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+
+        _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 10), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);

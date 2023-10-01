@@ -9,6 +9,7 @@ namespace MonoTestProject;
 
 public class Entity
 {
+    public bool IsAlive = true;
     public virtual void Update(float deltaTime) { }
     public virtual void Draw(SpriteBatch spriteBatch) { }
 }
