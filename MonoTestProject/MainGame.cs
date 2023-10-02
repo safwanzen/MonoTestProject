@@ -55,7 +55,7 @@ public class MainGame : Game
         
         Console.WriteLine("initialize called");
         base.Initialize();
-        SoundEffect.MasterVolume = .3f;
+        SoundEffect.MasterVolume = .0f;
     }
 
     protected override void LoadContent()
@@ -207,6 +207,10 @@ public class MainGame : Game
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 10), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedX: {character.Speed.X}", new Vector2(10, 30), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedY: {character.Speed.Y}", new Vector2(10, 50), Color.Black);
+        _spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 70), Color.Black);
+        _spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 90), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);

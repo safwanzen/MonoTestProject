@@ -117,14 +117,15 @@ public class Bullet : Entity
         if (Wavy)
         {
             // wave trajectory
-            phase += deltaTime * 20;
+            var timescale = 10;
+            phase += deltaTime * timescale;
             //float t = Speed * deltaTime;
             var sinT = (float)Math.Sin(phase);
             //var cosT = (float)Math.Cos(distanceTravelled);
-            var yAmp = 10f;
-            var xAmp = 5f;
-            Position.X += xAmp * cosA * sinT + yAmp * sinA * sinT + Speed * deltaTime * Direction.X;
-            Position.Y += xAmp * sinA * sinT - yAmp * cosA * sinT + Speed * deltaTime * Direction.Y;
+            var yAmp = 30f * timescale;
+            var xAmp = 15f * timescale;
+            Position.X += (xAmp * cosA * sinT + yAmp * sinA * sinT + Speed * Direction.X) * deltaTime;
+            Position.Y += (xAmp * sinA * sinT - yAmp * cosA * sinT + Speed * Direction.Y) * deltaTime;
         }
         else
         {

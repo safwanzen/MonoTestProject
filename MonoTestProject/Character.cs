@@ -12,8 +12,8 @@ public class Character : Entity
     public Vector2 Speed;
     public float Rotation;
 
-    private Vector2 direction;
-    private float speedMagnitude = 0;
+    public Vector2 direction;
+    public float speedMagnitude = 0;
 
     // circular queue implementation
     int trailSize = 4;
@@ -33,6 +33,8 @@ public class Character : Entity
     float currChargeTime = 0f;
     bool fullyCharged = false;
     double shootParticleTimer = 0;
+
+    bool u, d, l, r;
 
     public Character()
     {
@@ -122,7 +124,7 @@ public class Character : Entity
                 });
                 for (int i = 0; i < 10; i++)
                 {
-                    var p = new Particle(Position, Rotation + (float)random.NextDouble() * (float)MathHelper.Pi - (float)MathHelper.PiOver2, 0.3f)
+                    var p = new Particle(Position, Rotation + (float)random.NextDouble() * MathHelper.Pi - MathHelper.PiOver2, 0.3f)
                     {
                         Speed = (float)random.NextDouble() * 400 + 100
                     };
@@ -142,20 +144,40 @@ public class Character : Entity
         //Speed.Y += MainGame.GravityAcceleration * deltaTime;
         //Position.Y += Speed.Y;
 
-#region movement
-        if (InputManager.IsDown(Keys.W)) { direction.Y = -1; }
-        if (InputManager.IsDown(Keys.S)) { direction.Y = 1; }
-        if (InputManager.IsDown(Keys.A)) { direction.X = -1; }
-        if (InputManager.IsDown(Keys.D)) { direction.X = 1; }
-        if (direction.Length() > 0) { direction.Normalize(); }
-       
-        float accel = 100f;
+        #region movement
+        u = InputManager.IsDown(Keys.W);
+        d = InputManager.IsDown(Keys.S);
+        l = InputManager.IsDown(Keys.A);
+        r = InputManager.IsDown(Keys.D);
 
-        Speed += direction * accel * deltaTime;
+        if (u && d) { direction.Y = 0; }
+        else if (u) { direction.Y = -1; }
+        else if (d) { direction.Y = 1; }
+        else { direction.Y = 0; }
+
+        if (l && r) { direction.X = 0; }
+        else if (l) { direction.X = -1; }
+        else if (r) { direction.X = 1; }
+        else { direction.X = 0; }
+
+        if (direction.Length() > 0) { direction.Normalize(); }
+
+        float accel = 0f;
+        if (u || d || l || r) accel = 5000f;
+
+        float maxSpeed = 1000f;
+        //speedMagnitude += direction.Length() * accel * deltaTime;
+        if (Speed.Length() < maxSpeed) 
+            Speed += direction * accel * deltaTime;
+        else
+        {
+            Speed = Vector2.Normalize(Speed) * maxSpeed;
+        }
         Position += Speed * deltaTime;
-        Speed -= direction * accel * deltaTime;
-        if (Speed.Length() < 2f) Speed = Vector2.Zero;
-        direction = Vector2.Zero;
+        if (Speed.Length() > 0) { Speed *= 0.9f; }
+        if (Speed.Length() < 3f) Speed = Vector2.Zero;
+        //direction = Vector2.Zero;
+        
  #endregion
 
         // check for boundary collision
