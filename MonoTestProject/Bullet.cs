@@ -94,18 +94,14 @@ public class Bullet : Entity
 
     private void CheckEnemyCollision()
     {
-        for (int a = 0; a < MainGame.Enemies.Count;)
+        for (int a = 0; a < MainGame.Enemies.Count; a++)
         {
             Enemy enemy = MainGame.Enemies[a];
-            if (!Hitbox.Intersects(enemy.Hitbox))
-            {
-                a++;
-                continue;
-            }
+            if (!Hitbox.Intersects(enemy.Hitbox)) continue;
             bool enemyDestroyed = enemy.TakeDamage(Damage);
             if (BulletType == BulletType.Charged) WasHit = !enemyDestroyed;
             else if (BulletType == BulletType.Normal) WasHit = true;
-            break;
+            //break;
         }
     }
 

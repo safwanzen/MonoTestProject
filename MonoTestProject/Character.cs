@@ -12,7 +12,8 @@ public class Character : Entity
     public Vector2 Speed;
     public float Rotation;
 
-    private const float speedMagnitude = 500;
+    private Vector2 direction;
+    private float speedMagnitude = 0;
 
     // circular queue implementation
     int trailSize = 4;
@@ -42,21 +43,12 @@ public class Character : Entity
 
     public override void Update(float deltaTime)
     {
-        var kstate = Keyboard.GetState();
-        //var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
         var mousestate = Mouse.GetState();
         var facingDirection = mousestate.Position.ToVector2() - Position;
         if (facingDirection.Length() > 0) facingDirection.Normalize();
         Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
 
-        if (InputManager.IsDown(Keys.W)) { Speed.Y = -1; }
-        else if (InputManager.IsDown(Keys.S)) { Speed.Y = 1; }
-        else { Speed.Y = 0; }
-
-        if (InputManager.IsDown(Keys.A)) { Speed.X = -1; }
-        else if (InputManager.IsDown(Keys.D)) { Speed.X = 1; }
-        else { Speed.X = 0; }
+        
 
         shootParticleTimer -= deltaTime;
         //if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
@@ -140,7 +132,7 @@ public class Character : Entity
             }
             else
             {
-                flashTime = 0.1f;
+                flashTime = 0.3f;
                 characterFlashing = false;
                 currChargeTime = 0;
             }
@@ -150,28 +142,43 @@ public class Character : Entity
         //Speed.Y += MainGame.GravityAcceleration * deltaTime;
         //Position.Y += Speed.Y;
 
-        if (Speed.Length() > 0) Speed.Normalize();
-        Position += Speed * speedMagnitude * deltaTime;
+#region movement
+        if (InputManager.IsDown(Keys.W)) { direction.Y = -1; }
+        if (InputManager.IsDown(Keys.S)) { direction.Y = 1; }
+        if (InputManager.IsDown(Keys.A)) { direction.X = -1; }
+        if (InputManager.IsDown(Keys.D)) { direction.X = 1; }
+        if (direction.Length() > 0) { direction.Normalize(); }
+       
+        float accel = 100f;
+
+        Speed += direction * accel * deltaTime;
+        Position += Speed * deltaTime;
+        Speed -= direction * accel * deltaTime;
+        if (Speed.Length() < 2f) Speed = Vector2.Zero;
+        direction = Vector2.Zero;
+ #endregion
 
         // check for boundary collision
         if (Position.X > MainGame.ScreenWidth - Texture.Width / 2)
         {
             Position.X = MainGame.ScreenWidth - Texture.Width / 2;
+            Speed.X = 0;
         }
         else if (Position.X < Texture.Width / 2)
         {
             Position.X = Texture.Width / 2;
+            Speed.X = 0;
         }
 
         if (Position.Y > MainGame.ScreenHeight - Texture.Height / 2)
         {
             Position.Y = MainGame.ScreenHeight - Texture.Height / 2;
-            //Speed.Y = -Speed.Y * 0.97f;
+            Speed.Y = 0;
         }
         else if (Position.Y < Texture.Height / 2)
         {
             Position.Y = Texture.Height / 2;
-            //Speed.Y = -Speed.Y * 0.97f;
+            Speed.Y = 0;
         }
 
         // trail array

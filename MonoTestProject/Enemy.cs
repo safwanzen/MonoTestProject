@@ -28,6 +28,9 @@ public class Enemy : Entity
     private float damageFlashTimer = 0;
     private bool oneHitKill = true;
 
+    private const float immunityTime = .5f;
+    private float immunityCounter = 0;
+
     public Enemy(Vector2 position)
     {
         Texture = MainGame.handTexture;
@@ -43,6 +46,8 @@ public class Enemy : Entity
 
     public bool TakeDamage(float damage)
     {
+        //if (immunityCounter > 0) return false;
+        //immunityCounter = 1f;
         HitPoints -= damage;
         //Console.WriteLine("took damage");
         Hit = true;
@@ -70,6 +75,11 @@ public class Enemy : Entity
 
     public override void Update(float deltaTime)
     {
+        if (immunityCounter > 0)
+            immunityCounter -= deltaTime;
+        else
+            immunityCounter = 0;
+
         Position += Direction * speed * deltaTime;
 
         Hitbox.X = (int)Position.X - Texture.Width / 2;

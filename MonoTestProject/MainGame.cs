@@ -104,7 +104,6 @@ public class MainGame : Game
         character = new Character()
         {
             Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
-            Speed = new Vector2(300f, 0f),
         };
 
         //enemy = new Enemy(new Vector2(500, 200));
@@ -126,9 +125,9 @@ public class MainGame : Game
 
         character.Update(deltaTime);
         
-        foreach (var item in Enemies)
+        foreach (var enemy in Enemies)
         {
-            item.Update(deltaTime);
+            enemy.Update(deltaTime);
         }
         
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
