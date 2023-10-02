@@ -115,6 +115,7 @@ public class MainGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        InputManager.BeginFrame();
         //Console.WriteLine("update \t {0}", gameTime.TotalGameTime);
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
@@ -130,7 +131,8 @@ public class MainGame : Game
             item.Update(deltaTime);
         }
         
-        if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
+        //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
+        if (InputManager.IsPressed(MouseButtons.RightButton))
         {
             var e = new Enemy(mousestate.Position.ToVector2());
             Console.WriteLine("Enemy added {0}", e.GetHashCode());
@@ -171,9 +173,9 @@ public class MainGame : Game
         }
 
         // reset mouse
-        PrevLMBState = mousestate.LeftButton;
-        PrevRMBState = mousestate.RightButton;
-
+        //PrevLMBState = mousestate.LeftButton;
+        //PrevRMBState = mousestate.RightButton;
+        InputManager.EndFrame();
         base.Update(gameTime);
     }
 

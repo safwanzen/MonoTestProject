@@ -20,8 +20,8 @@ public class Character : Entity
     int start = 0;
     public (Vector2, float)[] trails;
     
-    const float frameTime = 0.05f;
-    float currTime = frameTime;
+    const float trailSpawnTime = 0.05f;
+    float currTrailSpawnTime = trailSpawnTime;
 
     Random random = new Random();
 
@@ -50,16 +50,17 @@ public class Character : Entity
         if (facingDirection.Length() > 0) facingDirection.Normalize();
         Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
 
-        if (kstate.IsKeyDown(Keys.W)) { Speed.Y = -1; }
-        else if (kstate.IsKeyDown(Keys.S)) { Speed.Y = 1; }
+        if (InputManager.IsDown(Keys.W)) { Speed.Y = -1; }
+        else if (InputManager.IsDown(Keys.S)) { Speed.Y = 1; }
         else { Speed.Y = 0; }
 
-        if (kstate.IsKeyDown(Keys.A)) { Speed.X = -1; }
-        else if (kstate.IsKeyDown(Keys.D)) { Speed.X = 1; }
+        if (InputManager.IsDown(Keys.A)) { Speed.X = -1; }
+        else if (InputManager.IsDown(Keys.D)) { Speed.X = 1; }
         else { Speed.X = 0; }
 
         shootParticleTimer -= deltaTime;
-        if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
+        //if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
+        if (InputManager.IsPressed(MouseButtons.LeftButton) && shootParticleTimer <= 0)
         {
             shootParticleTimer = 0.05f;
 
@@ -78,7 +79,8 @@ public class Character : Entity
 
         }
 
-        if (mousestate.LeftButton == ButtonState.Pressed)
+        //if (mousestate.LeftButton == ButtonState.Pressed)
+        if (InputManager.IsDown(MouseButtons.LeftButton))
         {
             currChargeTime += deltaTime;
             flashTime -= deltaTime;
@@ -93,7 +95,8 @@ public class Character : Entity
             fullyCharged = currChargeTime > maxChargeTime;
         }
 
-        if (mousestate.LeftButton == ButtonState.Released)
+        //if (mousestate.LeftButton == ButtonState.Released)
+        if (InputManager.IsUp(MouseButtons.LeftButton))
         {
             // charged shot
             if (fullyCharged)
@@ -179,10 +182,10 @@ public class Character : Entity
         //    trails[i] = (pos, life - 0.05f);
         //}
 
-        currTime += deltaTime;
-        if (currTime > frameTime)
+        currTrailSpawnTime += deltaTime;
+        if (currTrailSpawnTime > trailSpawnTime)
         {
-            currTime = 0;
+            currTrailSpawnTime = 0;
             trails[start] = (Position, Rotation);
             start++;
             if (count < trailSize - 1) count++;

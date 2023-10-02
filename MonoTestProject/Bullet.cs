@@ -145,7 +145,7 @@ public class Bullet : Entity
             MainGame.Entities
                 .Add(new Particle(Position, rotationAngle, 0.2f, FadeEffect.FadeOutScale)
                 {
-                    Speed = Speed / 5
+                    //Speed = Speed / 5
                 });
         }
 
