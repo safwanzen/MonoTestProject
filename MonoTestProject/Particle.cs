@@ -37,16 +37,20 @@ public class Particle : Entity
     private float lifetime = 0f;
     private float initialLife;
     private float scale = 1f;
+    private Texture2D texture;
+    private Vector2 textureOrigin;
 
     FadeEffect fadeEffect = FadeEffect.FadeOut;
 
-    public Particle(Vector2 position, float rotation, float lifetime, FadeEffect fadeEffect)
+    public Particle(Vector2 position, float rotation, float lifetime, Texture2D texture, FadeEffect fadeEffect)
     {
         Position = position;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
         this.fadeEffect = fadeEffect;
+        this.texture = texture;
+        textureOrigin = new Vector2(texture.Width / 2, texture.Height / 2);
     }
 
     public Particle(Vector2 position, float rotation, float lifetime)
@@ -55,6 +59,8 @@ public class Particle : Entity
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
+        texture = MainGame.particleTexture;
+        textureOrigin = new Vector2(texture.Width / 2, texture.Height / 2);
     }
 
     public override void Update(float dt)
@@ -71,7 +77,7 @@ public class Particle : Entity
     public override void Draw(SpriteBatch spriteBatch)
     {
 
-        spriteBatch.Draw(MainGame.ParticleTrailTexture, Position, null, Color.White * (lifetime / initialLife),
-            RotationRad + MathHelper.PiOver2, new Vector2(16, 22), new Vector2(scale), SpriteEffects.None, 0f);
+        spriteBatch.Draw(texture, Position, null, Color.White * (lifetime / initialLife),
+            RotationRad, textureOrigin, new Vector2(scale), SpriteEffects.None, 0f);
     }
 }

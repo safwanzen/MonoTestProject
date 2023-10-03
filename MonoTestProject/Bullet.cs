@@ -20,8 +20,8 @@ public class Bullet : Entity
     public Vector2 Position;
     public Texture2D Texture;
     public Vector2 Direction;
-    public float Speed = 600;
-    public float Damage = 1;
+    public float Speed = 0;
+    public float Damage = 0;
     public BulletType BulletType = BulletType.Normal;
 
     public bool Wavy = false;
@@ -41,14 +41,26 @@ public class Bullet : Entity
     private float rotationAngle;
 
     public Rectangle Hitbox = new();
+    private Vector2 textureOrigin;
 
-    private static float frameTime = 0.05f;
-    float currTime = frameTime;
+    private static float particleSpawnTime = 0.02f;
+    float currTime = particleSpawnTime;
 
     public bool WasHit = false;
     Random r = new Random();
 
     public float phase = MathHelper.PiOver2;
+    public float Phase
+    {
+        get => phase;
+        set
+        {
+            phase = value;
+            //cosA =  Direction.X + (float)Math.Cos(phase);
+            //sinA =  Direction.Y + (float)Math.Sin(phase);
+        }
+    }
+
     float cosA;
     float sinA;
 
@@ -63,19 +75,38 @@ public class Bullet : Entity
         //Speed = new Vector2((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed);
     }
 
-    public Bullet(Vector2 direction, float rotation)
+    public Bullet(Vector2 position, Vector2 direction, float rotation, float hitboxWidth = 0, float hitboxHeight = 0, Texture2D texture = null)
     {
         //Random r = new Random();
         //rotationSpeed = (float)r.NextDouble() * 90 - 45;
+        Position = position;
         Direction = direction;
         rotationAngle = rotation;
-        Texture = MainGame.handTexture;
-        var w = Texture.Width;
-        var h = Texture.Height;
-        Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
-        
-        cosA = (float)Math.Cos(rotationAngle);
-        sinA = (float)Math.Sin(rotationAngle);
+
+        direction.Normalize();
+        cosA = direction.X;// (float)Math.Cos(rotationAngle);
+        sinA = direction.Y;// (float)Math.Sin(rotationAngle);
+
+        Hitbox = new Rectangle();
+        Hitbox.Width = (int)hitboxWidth;
+        Hitbox.Height = (int)hitboxHeight;
+        UpdateHitBox();
+
+        if (texture != null)
+        {
+            Texture = texture;
+        }
+        else
+        {
+            Texture = MainGame.particleTexture;
+        }
+        textureOrigin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+    }
+
+    private void UpdateHitBox()
+    {
+        Hitbox.X = (int)Position.X - Hitbox.Width / 2;
+        Hitbox.Y = (int)Position.Y - Hitbox.Height / 2;
     }
 
     private void CheckHit()
@@ -111,7 +142,6 @@ public class Bullet : Entity
             || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
     }
 
-
     public override void Update(float deltaTime)
     {
         if (Wavy)
@@ -136,27 +166,23 @@ public class Bullet : Entity
         rotationAngle += rotationSpeed * deltaTime;
 
         currTime += deltaTime;
-        if (currTime > frameTime)
-        {
-            currTime = 0;
-            MainGame.Entities
-                .Add(new Particle(Position, rotationAngle, 0.2f, FadeEffect.FadeOutScale)
-                {
-                    //Speed = Speed / 5
-                });
-        }
+        //if (currTime > particleSpawnTime)
+        //{
+        //    currTime = 0;
+        //    MainGame.Entities
+        //        .Add(new Particle(Position, rotationAngle, 0.06f, Texture, FadeEffect.FadeOutScale)
+        //        {
+        //            //Speed = Speed / 5
+        //        });
+        //}
 
-        Hitbox.X = (int)Position.X - Texture.Width / 2;
-        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
-        Hitbox.Width = Texture.Width;
-        Hitbox.Height = Texture.Height;
-
+        UpdateHitBox();
         CheckHit();
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(MainGame.particleTexture, Position, null, Color.White, rotationAngle + MathHelper.PiOver2,
-            new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+        spriteBatch.Draw(Texture, Position, null, Color.White, rotationAngle,
+            textureOrigin, Vector2.One, SpriteEffects.None, 0f);
     }
 }

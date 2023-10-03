@@ -63,9 +63,9 @@ public class Character : Entity
             var newDirection = facingDirection + dirFluctuation;
             newDirection.Normalize();
 
-            MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+            MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0, 12, 12, MainGame.BulletTextureMedium)
             {
-                Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
+                Speed = 800,
                 Damage = 4
             });
 
@@ -97,31 +97,34 @@ public class Character : Entity
             {
                 fullyCharged = false;
                 shootParticleTimer = 0.2;
-                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+                var chargedspeed = 1000f;
+                var bulletpos = Position + facingDirection * 20;
+                MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
                 {
-                    Position = Position, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
-                    Speed = 1000,
+                    Speed = chargedspeed,
                     Damage = 12,
                     BulletType = BulletType.Charged
                 });
-                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+
+                var b1 = new Bullet(bulletpos, facingDirection, 0, 12, 12, MainGame.BulletTextureLarge)
                 {
-                    Position = Position - facingDirection * 5, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
-                    Speed = 1000,
+                    Speed = chargedspeed,
                     Damage = 4,
-                    //BulletType = BulletType.Charged,
                     Wavy = true,
-                    phase = MathHelper.PiOver2
-                });
-                MainGame.Bullets.Add(new Bullet(direction: facingDirection, rotation: Rotation)
+                };
+                b1.Phase = MathHelper.PiOver2;
+
+                var b2 = new Bullet(bulletpos, facingDirection, 0, 12, 12, MainGame.BulletTextureLarge)
                 {
-                    Position = Position - facingDirection * 5, /*+ new Vector2(random.Next(20) - 10, random.Next(20) - 10) */
-                    Speed = 1000,
+                    Speed = chargedspeed,
                     Damage = 4,
-                    //BulletType = BulletType.Charged,
                     Wavy = true,
-                    phase = -MathHelper.PiOver2
-                });
+                };
+                b2.Phase = MathHelper.PiOver2 + MathHelper.Pi;
+
+                MainGame.Bullets.Add(b1);
+                MainGame.Bullets.Add(b2);
+
                 for (int i = 0; i < 10; i++)
                 {
                     var p = new Particle(Position, Rotation + (float)random.NextDouble() * MathHelper.Pi - MathHelper.PiOver2, 0.3f)
@@ -163,9 +166,9 @@ public class Character : Entity
         if (direction.Length() > 0) { direction.Normalize(); }
 
         float accel = 0f;
-        if (u || d || l || r) accel = 5000f;
+        if (u || d || l || r) accel = 8000f;
 
-        float maxSpeed = 1000f;
+        float maxSpeed = 800f;
         //speedMagnitude += direction.Length() * accel * deltaTime;
         if (Speed.Length() < maxSpeed) 
             Speed += direction * accel * deltaTime;
@@ -174,8 +177,11 @@ public class Character : Entity
             Speed = Vector2.Normalize(Speed) * maxSpeed;
         }
         Position += Speed * deltaTime;
-        if (Speed.Length() > 0) { Speed *= 0.9f; }
-        if (Speed.Length() < 3f) Speed = Vector2.Zero;
+        //if (Speed.Length() > 0) { Speed *= 0.95f; }
+        Speed *= 0.95f;
+        if (Math.Abs(Speed.X) < 3f) Speed.X = 0;
+        if (Math.Abs(Speed.Y) < 3f) Speed.Y = 0;
+        if (Speed.Length() < 9f) Speed = Vector2.Zero;
         //direction = Vector2.Zero;
         
  #endregion

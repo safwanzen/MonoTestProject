@@ -21,6 +21,9 @@ public class MainGame : Game
     public static Texture2D handTexture;
     public static Texture2D particleTexture;
     public static Texture2D ParticleTrailTexture;
+    public static Texture2D BulletTextureMedium;
+    public static Texture2D BulletTextureLarge;
+    public static Texture2D BulletTextureXLarge;
 
     public static SoundEffect BulletHitSound;
     public static SoundEffect BulletFireSound;
@@ -67,6 +70,10 @@ public class MainGame : Game
         Font = Content.Load<SpriteFont>("TextFont");
         handTexture = Content.Load<Texture2D>("hand");
         ballTexture = handTexture; //Content.Load<Texture2D>("ball");        
+        BulletTextureMedium = Content.Load<Texture2D>("ms_bullet_round_medium");
+        BulletTextureLarge = Content.Load<Texture2D>("ms_bullet_round_large");
+        BulletTextureXLarge = Content.Load<Texture2D>("ms_bullet_round_xlarge");
+
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
         BulletFireSound = Content.Load<SoundEffect>("Audio/ST01_00_00002");
 
