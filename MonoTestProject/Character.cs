@@ -14,6 +14,7 @@ public class Character : Entity
 
     private Sprite sprite;
     private AnimatedSprite bulletSprite;
+    private Sprite bulletLargeSprite;
 
     public Vector2 direction;
     public float speedMagnitude = 0;
@@ -43,6 +44,10 @@ public class Character : Entity
     {
         bulletSprite = new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true);
         Texture = MainGame.handTexture;
+        bulletLargeSprite = new Sprite(
+            MainGame.BulletTextureXLarge,
+            new Rectangle(0, 0, MainGame.BulletTextureXLarge.Width, MainGame.BulletTextureXLarge.Height),
+            new Vector2(MainGame.BulletTextureXLarge.Width / 2, MainGame.BulletTextureXLarge.Height / 2));
         sprite = new Sprite(
             MainGame.handTexture,
             new Rectangle(0, 0, MainGame.handTexture.Width, MainGame.handTexture.Height),
@@ -57,7 +62,7 @@ public class Character : Entity
         if (facingDirection.Length() > 0) facingDirection.Normalize();
         Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
 
-        
+        var bulletpos = Position + facingDirection * 20;
 
         shootParticleTimer -= deltaTime;
         //if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
@@ -70,7 +75,7 @@ public class Character : Entity
             var newDirection = facingDirection + dirFluctuation;
             newDirection.Normalize();
 
-            MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
+            MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0,
                 new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
                 12, 12)
             {
@@ -107,18 +112,15 @@ public class Character : Entity
                 fullyCharged = false;
                 shootParticleTimer = 0.2;
                 var chargedspeed = 100f;
-                var bulletpos = Position + facingDirection * 20;
                 //MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
-                MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
-                    new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
-                    12, 12)
+                MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, bulletLargeSprite, 28, 28)
                 {
                     Speed = chargedspeed,
                     Damage = 12,
                     BulletType = BulletType.Charged
                 });
 
-                var b1 = new Bullet(Position, facingDirection, 0,
+                var b1 = new Bullet(bulletpos, facingDirection, 0,
                     new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
                     12, 12)
                 {
@@ -128,7 +130,7 @@ public class Character : Entity
                 };
                 b1.Phase = MathHelper.PiOver2;
 
-                var b2 = new Bullet(Position, facingDirection, 0,
+                var b2 = new Bullet(bulletpos, facingDirection, 0,
                     new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
                     12, 12)
                 {

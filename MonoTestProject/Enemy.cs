@@ -52,7 +52,7 @@ public class Enemy : Entity
         //Console.WriteLine("took damage");
         Hit = true;
         damageFlashTimer = damageTime;
-        MainGame.Sounds[1].Play();
+        //MainGame.Sounds[1].Play();
         MainGame.Entities.Add(new DamageParticle(Position, -MathHelper.PiOver2, .8f, damage.ToString()) { Speed = 300 });
         if (HitPoints <= 0)
         {
@@ -63,7 +63,7 @@ public class Enemy : Entity
                 {
                     Speed = (float)random.NextDouble() * 500 + 50
                 };
-                MainGame.Sounds[5].Play(0.1f, 0, 0);
+                //MainGame.Sounds[5].Play(0.1f, 0, 0);
                 MainGame.Entities.Add(p);
             }
             MainGame.Enemies.Remove(this);
