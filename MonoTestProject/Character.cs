@@ -12,14 +12,17 @@ public class Character : Entity
     public Vector2 Speed;
     public float Rotation;
 
+    private Sprite sprite;
+    private AnimatedSprite bulletSprite;
+
     public Vector2 direction;
     public float speedMagnitude = 0;
 
     // circular queue implementation
-    int trailSize = 4;
+    const int trailSize = 4;
     int count = 0;
     int start = 0;
-    public (Vector2, float)[] trails;
+    public (Vector2, float)[] trails = new (Vector2, float)[trailSize];
     
     const float trailSpawnTime = 0.05f;
     float currTrailSpawnTime = trailSpawnTime;
@@ -38,8 +41,12 @@ public class Character : Entity
 
     public Character()
     {
+        bulletSprite = new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true);
         Texture = MainGame.handTexture;
-        trails = new (Vector2, float)[trailSize];
+        sprite = new Sprite(
+            MainGame.handTexture,
+            new Rectangle(0, 0, MainGame.handTexture.Width, MainGame.handTexture.Height),
+            new Vector2(16, 22));
     }
 
 
@@ -63,9 +70,11 @@ public class Character : Entity
             var newDirection = facingDirection + dirFluctuation;
             newDirection.Normalize();
 
-            MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0, 12, 12, MainGame.BulletTextureMedium)
+            MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
+                new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
+                12, 12)
             {
-                Speed = 800,
+                Speed = 100,
                 Damage = 4
             });
 
@@ -97,16 +106,21 @@ public class Character : Entity
             {
                 fullyCharged = false;
                 shootParticleTimer = 0.2;
-                var chargedspeed = 1000f;
+                var chargedspeed = 100f;
                 var bulletpos = Position + facingDirection * 20;
-                MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
+                //MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
+                MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
+                    new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
+                    12, 12)
                 {
                     Speed = chargedspeed,
                     Damage = 12,
                     BulletType = BulletType.Charged
                 });
 
-                var b1 = new Bullet(bulletpos, facingDirection, 0, 12, 12, MainGame.BulletTextureLarge)
+                var b1 = new Bullet(Position, facingDirection, 0,
+                    new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
+                    12, 12)
                 {
                     Speed = chargedspeed,
                     Damage = 4,
@@ -114,7 +128,9 @@ public class Character : Entity
                 };
                 b1.Phase = MathHelper.PiOver2;
 
-                var b2 = new Bullet(bulletpos, facingDirection, 0, 12, 12, MainGame.BulletTextureLarge)
+                var b2 = new Bullet(Position, facingDirection, 0,
+                    new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
+                    12, 12)
                 {
                     Speed = chargedspeed,
                     Damage = 4,
@@ -240,8 +256,9 @@ public class Character : Entity
         }
         // need to rotate sprite because it points up
         // if it points to the right no need to rotate
-        spriteBatch.Draw(Texture, Position, null,
-            !characterFlashing ? Color.White : Color.OrangeRed, Rotation + MathHelper.PiOver2,
-            new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+        //spriteBatch.Draw(Texture, Position, null,
+        //    !characterFlashing ? Color.White : Color.OrangeRed, Rotation + MathHelper.PiOver2,
+        //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+        sprite.Draw(spriteBatch, Position, Rotation + MathHelper.PiOver2, !characterFlashing ? Color.White : Color.OrangeRed);
     }
 }

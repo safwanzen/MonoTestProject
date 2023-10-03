@@ -18,7 +18,6 @@ public enum BulletType
 public class Bullet : Entity
 {
     public Vector2 Position;
-    public Texture2D Texture;
     public Vector2 Direction;
     public float Speed = 0;
     public float Damage = 0;
@@ -26,6 +25,8 @@ public class Bullet : Entity
 
     public bool Wavy = false;
         
+    private Sprite Sprite;
+
     private float _angle;
     public float Angle
     {
@@ -39,9 +40,9 @@ public class Bullet : Entity
 
     private float rotationSpeed;
     private float rotationAngle;
-
+    private readonly Sprite sprite;
     public Rectangle Hitbox = new();
-    private Vector2 textureOrigin;
+    private Vector2 spriteOrigin;
 
     private static float particleSpawnTime = 0.02f;
     float currTime = particleSpawnTime;
@@ -64,25 +65,37 @@ public class Bullet : Entity
     float cosA;
     float sinA;
 
-    public Bullet()
+    const int trailSize = 6;
+    int trailIndex = 0;
+    int trailCount = 0;
+    Vector2[] trails = new Vector2[trailSize];
+
+    Vector2 Trail
     {
-        Random _r = new Random();
-        Direction.Y = (float)r.NextDouble() * -.1f;
-        Direction.X = (float)r.NextDouble() - .5f;
-        rotationSpeed = (float)r.NextDouble() * 90 - 45;
-        //var angle = r.NextDouble() * Math.PI;
-        //var speed = 5f;
-        //Speed = new Vector2((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed);
+        //get
+        //{
+        //    var index = trailIndex;
+        //    trailIndex++;
+        //    if (trailIndex > trailCount) { trailIndex = 0; }
+        //    return trails[index];
+        //}
+        set
+        {
+            trails[trailIndex] = value;
+            trailIndex++;
+            if (trailCount < trailSize - 1) trailCount++;
+            if (trailIndex > trailCount) { trailIndex = 0; }
+        }
     }
 
-    public Bullet(Vector2 position, Vector2 direction, float rotation, float hitboxWidth = 0, float hitboxHeight = 0, Texture2D texture = null)
+    public Bullet(Vector2 position, Vector2 direction, float rotation, Sprite sprite, float hitboxWidth = 0, float hitboxHeight = 0)
     {
         //Random r = new Random();
         //rotationSpeed = (float)r.NextDouble() * 90 - 45;
         Position = position;
         Direction = direction;
         rotationAngle = rotation;
-
+        this.sprite = sprite;
         direction.Normalize();
         cosA = direction.X;// (float)Math.Cos(rotationAngle);
         sinA = direction.Y;// (float)Math.Sin(rotationAngle);
@@ -92,15 +105,9 @@ public class Bullet : Entity
         Hitbox.Height = (int)hitboxHeight;
         UpdateHitBox();
 
-        if (texture != null)
-        {
-            Texture = texture;
-        }
-        else
-        {
-            Texture = MainGame.particleTexture;
-        }
-        textureOrigin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+        Sprite = sprite;
+        spriteOrigin = new Vector2(8, 8);
+
     }
 
     private void UpdateHitBox()
@@ -165,24 +172,34 @@ public class Bullet : Entity
 
         rotationAngle += rotationSpeed * deltaTime;
 
-        currTime += deltaTime;
+        //currTime += deltaTime;
         //if (currTime > particleSpawnTime)
         //{
         //    currTime = 0;
-        //    MainGame.Entities
-        //        .Add(new Particle(Position, rotationAngle, 0.06f, Texture, FadeEffect.FadeOutScale)
-        //        {
-        //            //Speed = Speed / 5
-        //        });
+        //}
+        //MainGame.Entities.Add(new Particle(Position, rotationAngle, 0.04f, Texture, FadeEffect.None));
+
+        //currTime += deltaTime;
+        //if (currTime > particleSpawnTime)
+        //{
+        //    currTime = 0;
+        //    Trail = Position;
         //}
 
+        sprite.Update(deltaTime);
         UpdateHitBox();
         CheckHit();
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(Texture, Position, null, Color.White, rotationAngle,
-            textureOrigin, Vector2.One, SpriteEffects.None, 0f);
+        //for (int i = trailIndex; i < trailCount; i++)
+        //{
+        //    spriteBatch.Draw(Texture, trails[i], null, Color.White, rotationAngle,
+        //    textureOrigin, Vector2.One, SpriteEffects.None, 0f);
+        //}
+        //spriteBatch.Draw(Sprite, Position, null, Color.White, rotationAngle,
+        //    spriteOrigin, Vector2.One, SpriteEffects.None, 0f);
+        sprite.Draw(spriteBatch, Position, rotationAngle, Color.White);
     }
 }

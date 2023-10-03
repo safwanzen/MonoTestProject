@@ -76,8 +76,12 @@ public class Particle : Entity
 
     public override void Draw(SpriteBatch spriteBatch)
     {
+        Color color = Color.White;
 
-        spriteBatch.Draw(texture, Position, null, Color.White * (lifetime / initialLife),
+        if (fadeEffect == FadeEffect.FadeOut || fadeEffect == FadeEffect.FadeOutScale)
+            color = Color.White * (lifetime / initialLife);
+
+        spriteBatch.Draw(texture, Position, null, color,
             RotationRad, textureOrigin, new Vector2(scale), SpriteEffects.None, 0f);
     }
 }

@@ -24,6 +24,7 @@ public class MainGame : Game
     public static Texture2D BulletTextureMedium;
     public static Texture2D BulletTextureLarge;
     public static Texture2D BulletTextureXLarge;
+    public static Texture2D BulletSheet;
 
     public static SoundEffect BulletHitSound;
     public static SoundEffect BulletFireSound;
@@ -73,6 +74,7 @@ public class MainGame : Game
         BulletTextureMedium = Content.Load<Texture2D>("ms_bullet_round_medium");
         BulletTextureLarge = Content.Load<Texture2D>("ms_bullet_round_large");
         BulletTextureXLarge = Content.Load<Texture2D>("ms_bullet_round_xlarge");
+        BulletSheet = Content.Load<Texture2D>("ms_bullet_16x48");
 
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
         BulletFireSound = Content.Load<SoundEffect>("Audio/ST01_00_00002");
@@ -213,11 +215,12 @@ public class MainGame : Game
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
-        _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 10), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedX: {character.Speed.X}", new Vector2(10, 30), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedY: {character.Speed.Y}", new Vector2(10, 50), Color.Black);
-        _spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 70), Color.Black);
-        _spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 90), Color.Black);
+        _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
+        _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedX: {character.Speed.X}", new Vector2(10, 50), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedY: {character.Speed.Y}", new Vector2(10, 70), Color.Black);
+        _spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
+        _spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);
