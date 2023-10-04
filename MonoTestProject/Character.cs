@@ -70,8 +70,14 @@ public class Character : Entity
             var newDirection = facingDirection + dirFluctuation;
             newDirection.Normalize();
 
-            MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
-                new AnimatedSprite(MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), new Vector2(8, 8), 3, 30, true), 
+            MainGame.Bullets.Add(
+                new Bullet(Position, facingDirection, 0,
+                new AnimatedSprite(
+                    MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), 
+                    new Vector2(8, 8), 
+                    numFrames: 3, 
+                    durations: new float[] { 0.1f, 0.1f, 0.5f }, 
+                    true), 
                 12, 12)
             {
                 Speed = 100,
@@ -106,7 +112,7 @@ public class Character : Entity
             {
                 fullyCharged = false;
                 shootParticleTimer = 0.2;
-                var chargedspeed = 100f;
+                var chargedspeed = 800f;
                 var bulletpos = Position + facingDirection * 20;
                 //MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
                 MainGame.Bullets.Add(new Bullet(Position, facingDirection, 0,
