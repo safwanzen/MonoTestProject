@@ -76,16 +76,18 @@ public class Character : Entity
             newDirection.Normalize();
 
             MainGame.Bullets.Add(
-                new Bullet(Position, facingDirection, 0,
+                new Bullet(bulletpos, facingDirection, 0,
                 new AnimatedSprite(
                     MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), 
                     new Vector2(8, 8), 
                     numFrames: 3, 
-                    durations: new float[] { 0.1f, 0.1f, 0.5f }, 
-                    true), 
+                    //durations: new float[] { 0.5f, 0.5f, 0.5f }, 
+                    fps: 15,
+                    isLooping: true,
+                    sequence: new int[] { 0, 1, 2, 1 }), 
                 12, 12)
             {
-                Speed = 100,
+                Speed = 600,
                 Damage = 4
             });
 
@@ -118,7 +120,6 @@ public class Character : Entity
                 fullyCharged = false;
                 shootParticleTimer = 0.2;
                 var chargedspeed = 800f;
-                var bulletpos = Position + facingDirection * 20;
                 //MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
                 MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, bulletLargeSprite, 28, 28)
                 {

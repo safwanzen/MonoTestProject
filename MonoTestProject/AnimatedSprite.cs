@@ -35,6 +35,11 @@ internal class AnimatedSprite : Sprite
         this.isLooping = isLooping;
         totalDuration = fps;
         duration = 1f / fps;
+
+        if (sequence != null)
+        {
+            frameIndex = sequence[0];
+        }
     }
 
     public AnimatedSprite(Texture2D texture, Rectangle sourceRect, Vector2 origin, int numFrames, float[] durations, bool isLooping = false, int[] sequence = null)
@@ -45,6 +50,11 @@ internal class AnimatedSprite : Sprite
         this.sequence = sequence;
         this.isLooping = isLooping;
         totalDuration = fps;
+
+        if (sequence != null)
+        {
+            frameIndex = sequence[0];
+        }
     }
 
     public override void Update(float deltaTime)
@@ -56,17 +66,38 @@ internal class AnimatedSprite : Sprite
         else if (fps > 0f) AnimateFixedDuration();
     }
 
+    private void NextFrame()
+    {
+        currentDuration = 0;
+        
+        if (sequence != null)
+        {
+            ++sequenceIndex;
+            
+            if (sequenceIndex >= sequence.Length) 
+            {
+                if (isLooping) sequenceIndex = 0;
+                else sequenceIndex = sequence.Length - 1;
+            }
+
+            frameIndex = sequence[sequenceIndex];
+        }
+        else
+        {
+            ++frameIndex;
+            if (frameIndex > numFrames - 1)
+            {
+                if (isLooping) frameIndex = 0;
+                else frameIndex = numFrames - 1;
+            }
+        }
+    }
+
     private void AnimateFixedDuration()
     {
         if (currentDuration > duration)
         {
-            currentDuration = 0;
-            ++frameIndex;
-        }
-        if (frameIndex > numFrames - 1)
-        {
-            if (isLooping) frameIndex = 0;
-            else frameIndex = numFrames - 1;
+            NextFrame();
         }
     }
 
@@ -74,13 +105,7 @@ internal class AnimatedSprite : Sprite
     {
         if (currentDuration > durations[frameIndex])
         {
-            currentDuration = 0;
-            ++frameIndex;
-        }
-        if (frameIndex > numFrames - 1)
-        {
-            if (isLooping) frameIndex = 0;
-            else frameIndex = numFrames - 1;
-        }
+            NextFrame();
+        }        
     }
 }
