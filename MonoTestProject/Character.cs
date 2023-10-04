@@ -8,7 +8,6 @@ namespace MonoTestProject;
 public class Character : Entity
 {
     public Texture2D Texture;
-    public Vector2 Position;
     public Vector2 Speed;
     public float Rotation;
 
@@ -81,7 +80,7 @@ public class Character : Entity
                     MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), 
                     new Vector2(8, 8), 
                     numFrames: 3, 
-                    durations: new float[] { 1f, 0.2f, 0.2f, 0.2f}, 
+                    durations: new float[] { 1f, 0.1f, 0.1f, 0.1f}, 
                     //fps: 15,
                     isLooping: true,
                     sequence: new int[] { 0, 1, 0, 2 }), 

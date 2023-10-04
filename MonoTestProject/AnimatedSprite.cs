@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
-internal class AnimatedSprite : Sprite
+public class AnimatedSprite : Sprite
 {
     private int numFrames;
     private int frameIndex;
@@ -84,6 +84,15 @@ internal class AnimatedSprite : Sprite
         
         if (durations != null) AnimateVariableDuration();
         else if (fps > 0f) AnimateFixedDuration();
+    }
+
+    public void ResetAnimation()
+    {
+        currentDuration = 0f;
+        if (sequence != null) frameIndex = sequence[0];
+        else frameIndex = 0;
+        sequenceIndex = 0;
+        durationIndex = 0;
     }
 
     private void NextFrame()

@@ -25,6 +25,7 @@ public class MainGame : Game
     public static Texture2D BulletTextureLarge;
     public static Texture2D BulletTextureXLarge;
     public static Texture2D BulletSheet;
+    public Texture2D CaveStoryCharSheet;
 
     public static SoundEffect BulletHitSound;
     public static SoundEffect BulletFireSound;
@@ -42,7 +43,7 @@ public class MainGame : Game
 
     public static SpriteFont Font;
 
-    Character character;
+    PlatformerCharacter character;
     
     public MainGame()
     {
@@ -75,6 +76,7 @@ public class MainGame : Game
         BulletTextureLarge = Content.Load<Texture2D>("ms_bullet_round_large");
         BulletTextureXLarge = Content.Load<Texture2D>("ms_bullet_round_xlarge");
         BulletSheet = Content.Load<Texture2D>("ms_bullet_16x48");
+        CaveStoryCharSheet = Content.Load<Texture2D>("cave-story-wii-sprite-sheet-transparent");
 
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
         BulletFireSound = Content.Load<SoundEffect>("Audio/ST01_00_00002");
@@ -110,9 +112,22 @@ public class MainGame : Game
         ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 2,
             _graphics.PreferredBackBufferHeight / 2);
         ballSpeed = new Vector2();
-        character = new Character()
+
+        int sqw = 32;
+        character = new PlatformerCharacter()
         {
             Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
+            runningSprite = new AnimatedSprite(
+                CaveStoryCharSheet,
+                new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
+                new Vector2(sqw / 2, sqw / 2),
+                3, 12, true, new int[] { 1, 0, 2, 0 }),
+            standingSprite = new Sprite(
+                CaveStoryCharSheet,
+                new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
+                new Vector2(sqw / 2, sqw / 2)
+                )
+
         };
 
         //enemy = new Enemy(new Vector2(500, 200));
@@ -216,10 +231,10 @@ public class MainGame : Game
 
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedX: {character.Speed.X}", new Vector2(10, 50), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedY: {character.Speed.Y}", new Vector2(10, 70), Color.Black);
-        _spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
-        _spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedX: {character.Position.X}", new Vector2(10, 50), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedY: {character.Position.Y}", new Vector2(10, 70), Color.Black);
+        //_spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
+        //_spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);

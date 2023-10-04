@@ -1,11 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
@@ -17,7 +12,6 @@ public enum BulletType
 
 public class Bullet : Entity
 {
-    public Vector2 Position;
     public Vector2 Direction;
     public float Speed = 0;
     public float Damage = 0;

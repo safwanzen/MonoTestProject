@@ -14,7 +14,6 @@ public class Enemy : Entity
     private Vector2 origin = new();
 
     public Texture2D Texture;
-    public Vector2 Position = new();
     public Vector2 Direction = new(); // for now make it move slowly towards character
     public float Rotation = 0;
 
