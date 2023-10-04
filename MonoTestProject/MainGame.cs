@@ -142,6 +142,7 @@ public class MainGame : Game
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
         if (InputManager.IsPressed(MouseButtons.RightButton))
         {
+            //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
             var e = new Enemy(mousestate.Position.ToVector2());
             Console.WriteLine("Enemy added {0}", e.GetHashCode());
             Enemies.Add(e);
@@ -149,23 +150,21 @@ public class MainGame : Game
 
         for (int i = 0; i < Entities.Count;)
         {
-            var entity = Entities[i];
-            if (!entity.IsAlive) Entities.RemoveAt(i);
+            if (!Entities[i].IsAlive) Entities.RemoveAt(i);
             else
             {
-                entity.Update(deltaTime);
+                Entities[i].Update(deltaTime);
                 i++;
             }
         }
 
         for (int i = 0; i < Bullets.Count;)
         {
-            var particle = Bullets[i];
-            if (particle.WasHit)
+            if (Bullets[i].WasHit)
             {
                 for (int a = 0; a < 5; a++)
                 {
-                    var p = new Particle(particle.Position, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.1f)
+                    var p = new Particle(Bullets[i].Position, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.1f)
                     {
                         Speed = 600
                     };
@@ -175,7 +174,7 @@ public class MainGame : Game
             }
             else
             {
-                particle.Update(deltaTime);
+                Bullets[i].Update(deltaTime);
                 i++;
             }
         }
