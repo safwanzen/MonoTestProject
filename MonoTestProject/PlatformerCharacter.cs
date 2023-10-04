@@ -14,13 +14,17 @@ public class PlatformerCharacter : Entity
     public AnimatedSprite runningSprite;
     public Sprite standingSprite;
 
-    private Vector2 size = new(32, 32);
+    private Vector2 size = new(8, 32);
 
     private float gravity = 30f;
     private Vector2 speed;
 
     private bool facingRight = true;
     private bool running = false;
+
+    private float shootTimer = 0.05f;
+
+    private Weapon weapon = new();
 
     public PlatformerCharacter() 
     {        
@@ -46,10 +50,19 @@ public class PlatformerCharacter : Entity
             runningSprite.ResetAnimation();
         }
 
+        if (InputManager.IsPressed(Keys.I))
+        {
+            var dir = new Vector2(facingRight ? 1 : -1, 0);
+            weapon.Attack(Position + dir * 8, dir, 0);
+        }
+
         Position += speed * deltaTime;
+        
+        CheckMapCollision();
+
         running = speed.Length() > 0;
         if (running) runningSprite.Update(deltaTime);
-        CheckMapCollision();
+        weapon.Update(deltaTime);
         base.Update(deltaTime);
     }
 
