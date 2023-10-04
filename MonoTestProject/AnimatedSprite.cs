@@ -11,12 +11,12 @@ namespace MonoTestProject;
 internal class AnimatedSprite : Sprite
 {
     private int numFrames;
-    private int frameIndex; // share with durationIndex since numFrames == durations.Length
+    private int frameIndex;
     private bool isLooping;
 
     private float fps = 0; // if duration is constant throughout animation
 
-    //float durationIndex = 0;
+    private int durationIndex = 0;
     private float duration = 0;
     private float[] durations; // if duration is variable
     private float totalDuration = 0;
@@ -25,6 +25,8 @@ internal class AnimatedSprite : Sprite
 
     private int[] sequence; // sequence of frame index, elements must be between 0 and numframes-1 inclusive
     private int sequenceIndex = 0;
+
+    private bool pairDurationsWithSequence = false;
 
     public AnimatedSprite(Texture2D texture, Rectangle sourceRect, Vector2 origin, int numFrames, float fps, bool isLooping = false, int[] sequence = null)
         : base(texture, sourceRect, origin)
@@ -42,6 +44,23 @@ internal class AnimatedSprite : Sprite
         }
     }
 
+    /// <summary>
+    /// <paramref name="durations"/> - contains the duration for each frame.
+    /// The length of <paramref name="durations"/> must be the same as <paramref name="numFrames"/>
+    /// <br></br>
+    /// <paramref name="sequence"/> - The animation sequence. The frame numbers contained by the array
+    /// must not exceed <paramref name="numFrames"/> - 1. eg: new int[] { 0, 1, 3 } will
+    /// play frames 0 followed by frame 1 then frame 3. If <paramref name="isLooping"/> is true
+    /// the sequence loops. 
+    /// <br></br>
+    /// </summary>
+    /// <param name="texture"></param>
+    /// <param name="sourceRect"></param>
+    /// <param name="origin"></param>
+    /// <param name="numFrames"></param>
+    /// <param name="durations"></param>
+    /// <param name="isLooping"></param>
+    /// <param name="sequence"></param>
     public AnimatedSprite(Texture2D texture, Rectangle sourceRect, Vector2 origin, int numFrames, float[] durations, bool isLooping = false, int[] sequence = null)
         : base(texture, sourceRect, origin)
     {
@@ -54,6 +73,7 @@ internal class AnimatedSprite : Sprite
         if (sequence != null)
         {
             frameIndex = sequence[0];
+            pairDurationsWithSequence = sequence.Length == durations.Length;
         }
     }
 
@@ -81,6 +101,8 @@ internal class AnimatedSprite : Sprite
             }
 
             frameIndex = sequence[sequenceIndex];
+            if (pairDurationsWithSequence) durationIndex = sequenceIndex;
+            else durationIndex = frameIndex;
         }
         else
         {
@@ -90,6 +112,7 @@ internal class AnimatedSprite : Sprite
                 if (isLooping) frameIndex = 0;
                 else frameIndex = numFrames - 1;
             }
+            durationIndex = frameIndex;
         }
     }
 
@@ -103,7 +126,7 @@ internal class AnimatedSprite : Sprite
 
     private void AnimateVariableDuration()
     {
-        if (currentDuration > durations[frameIndex])
+        if (currentDuration > durations[durationIndex])
         {
             NextFrame();
         }        

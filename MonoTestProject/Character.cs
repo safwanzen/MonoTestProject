@@ -81,13 +81,13 @@ public class Character : Entity
                     MainGame.BulletSheet, new Rectangle(0, 0, 16, 16), 
                     new Vector2(8, 8), 
                     numFrames: 3, 
-                    //durations: new float[] { 0.5f, 0.5f, 0.5f }, 
-                    fps: 15,
+                    durations: new float[] { 1f, 0.2f, 0.2f, 0.2f}, 
+                    //fps: 15,
                     isLooping: true,
-                    sequence: new int[] { 0, 1, 2, 1 }), 
+                    sequence: new int[] { 0, 1, 0, 2 }), 
                 12, 12)
             {
-                Speed = 600,
+                Speed = 00,
                 Damage = 4
             });
 
