@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace MonoTestProject;
 
@@ -43,6 +44,8 @@ public class MainGame : Game
 
     public static SpriteFont Font;
 
+    public static World World = new();
+
     PlatformerCharacter character;
     
     public MainGame()
@@ -57,7 +60,6 @@ public class MainGame : Game
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
-        
         Console.WriteLine("initialize called");
         base.Initialize();
         SoundEffect.MasterVolume = .0f;
@@ -121,13 +123,17 @@ public class MainGame : Game
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
                 new Vector2(sqw / 2, sqw / 2),
-                3, 12, true, new int[] { 1, 0, 2, 0 }),
+                3, 
+                durations: new float[] { .15f, .083f, .15f, .083f },
+                true, 
+                sequence: new int[] { 1, 0, 2, 0 }),
             standingSprite = new Sprite(
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
                 new Vector2(sqw / 2, sqw / 2)
-                )
+                ),
 
+            World = World
         };
 
         //enemy = new Enemy(new Vector2(500, 200));
@@ -135,6 +141,12 @@ public class MainGame : Game
     }
 
     Random random = new Random();
+    
+    private float xoff = 0, yoff = 0;
+    private float xscale = 1, yscale = 1;
+    private float xscreencenter, yscreencenter;
+    Vector2 lastMousePosition;
+    private int lastScrollWheel;
 
     protected override void Update(GameTime gameTime)
     {
@@ -162,6 +174,46 @@ public class MainGame : Game
             Console.WriteLine("Enemy added {0}", e.GetHashCode());
             Enemies.Add(e);
         }
+
+        var currmouseposition = mousestate.Position.ToVector2();
+
+        if (InputManager.IsDown(MouseButtons.LeftButton) 
+            && currmouseposition.X < ScreenWidth && currmouseposition.Y < ScreenHeight 
+            && currmouseposition.X > 0 && currmouseposition.Y > 0)
+        {
+            var diff = World.ScreenToWorld(currmouseposition) - World.ScreenToWorld(lastMousePosition);
+            xoff += diff.X;
+            yoff += diff.Y;
+            World.SetOffset(xoff, yoff);
+        }
+
+        var oldmouseworldcoord = World.ScreenToWorld(currmouseposition);
+
+        if (lastScrollWheel - mousestate.ScrollWheelValue > 0)
+        {
+            xscale *= 1.1f;
+            yscale *= 1.1f;
+            World.scaleX = xscale;
+            World.scaleY = yscale;
+        }
+
+        if (lastScrollWheel - mousestate.ScrollWheelValue < 0)
+        {
+            xscale *= .9f;
+            yscale *= .9f;
+            World.scaleX = xscale;
+            World.scaleY = yscale;
+        }
+
+        var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
+        var mousediff = newmouseworldcoord - oldmouseworldcoord;
+        Console.WriteLine(mousediff);
+        xoff += mousediff.X;
+        yoff += mousediff.Y;
+        World.SetOffset(xoff, yoff);
+
+        lastMousePosition = mousestate.Position.ToVector2();
+        lastScrollWheel = mousestate.ScrollWheelValue;
 
         for (int i = 0; i < Entities.Count;)
         {
@@ -229,12 +281,17 @@ public class MainGame : Game
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
+        _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
+
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
         _spriteBatch.DrawString(Font, $"SpeedX: {character.Position.X}", new Vector2(10, 50), Color.Black);
         _spriteBatch.DrawString(Font, $"SpeedY: {character.Position.Y}", new Vector2(10, 70), Color.Black);
         //_spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
+        _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
+        //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
+        _spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);

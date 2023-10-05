@@ -5,6 +5,7 @@ namespace MonoTestProject;
 
 public class Entity
 {
+    public World World;
     public bool IsAlive = true; // mark for removal from list
     public Vector2 Position;
     public virtual void Update(float deltaTime) { }

@@ -26,20 +26,31 @@ public class PlatformerCharacter : Entity
 
     private Weapon weapon = new();
 
+    #region controls
+    private const Keys dpadUp = Keys.W;
+    private const Keys dpadDown = Keys.S;
+    private const Keys dpadLeft = Keys.A;
+    private const Keys dpadRight = Keys.D;
+    private const Keys ABtn = Keys.I;
+    private const Keys BBtn = Keys.O;
+    private const Keys LBtn = Keys.P;
+    private const Keys RBtn = Keys.OemQuotes;
+
+    #endregion
+
     public PlatformerCharacter() 
     {        
     }
 
     public override void Update(float deltaTime)
     {
-        speed.Y += gravity * deltaTime;        
-
-        if (InputManager.IsDown(Keys.D))
+        #region handle input
+        if (InputManager.IsDown(dpadRight))
         {
             speed.X = 100;
             facingRight = true;
         }
-        else if (InputManager.IsDown(Keys.A))
+        else if (InputManager.IsDown(dpadLeft))
         {
             speed.X = -100;
             facingRight = false;
@@ -50,15 +61,33 @@ public class PlatformerCharacter : Entity
             runningSprite.ResetAnimation();
         }
 
-        if (InputManager.IsPressed(Keys.I))
+        if (InputManager.IsPressed(ABtn))
         {
             var dir = new Vector2(facingRight ? 1 : -1, 0);
             weapon.Attack(Position + dir * 8, dir, 0);
         }
 
+        if (InputManager.IsReleased(ABtn))
+        {
+            var dir = new Vector2(facingRight ? 1 : -1, 0);
+            weapon.ReleaseCharge(Position + dir * 8, dir, 0);
+            weapon.Charge(false);
+        }
+
+        if (InputManager.IsDown(ABtn))
+        {
+            weapon.Charge(true);
+        }
+        #endregion
+
+        #region movement
         Position += speed * deltaTime;
-        
+        //speed.Y += gravity * deltaTime;        
+        #endregion
+
+        #region collision
         CheckMapCollision();
+        #endregion
 
         running = speed.Length() > 0;
         if (running) runningSprite.Update(deltaTime);
@@ -68,13 +97,15 @@ public class PlatformerCharacter : Entity
 
     public override void Draw(SpriteBatch spriteBatch)
     {
+        var position = World.WorldToScreen(Position);
+
         if (running)
         {
-            runningSprite.Draw(spriteBatch, Position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally);
+            runningSprite.Draw(spriteBatch, position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, World.scaleX, World.scaleY);
         }
         else
         {
-            standingSprite.Draw(spriteBatch, Position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally);
+            standingSprite.Draw(spriteBatch, position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, World.scaleX, World.scaleY);
         }
 
         base.Draw(spriteBatch);
