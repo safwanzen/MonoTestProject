@@ -8,6 +8,21 @@ public class Entity
     public World World;
     public bool IsAlive = true; // mark for removal from list
     public Vector2 Position;
-    public virtual void Update(float deltaTime) { }
+
+    public float scaleX;
+    public float scaleY;
+    public Vector2 ScreenPosition;
+
+    public Entity()
+    {
+        World = MainGame.World;
+    }
+
+    public virtual void Update(float deltaTime)
+    {
+        ScreenPosition = World.WorldToScreen(Position);
+        scaleX = World.scaleX; 
+        scaleY = World.scaleY;
+    }
     public virtual void Draw(SpriteBatch spriteBatch) { }
 }

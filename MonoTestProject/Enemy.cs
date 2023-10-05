@@ -74,6 +74,7 @@ public class Enemy : Entity
 
     public override void Update(float deltaTime)
     {
+        base.Update(deltaTime);
         if (immunityCounter > 0)
             immunityCounter -= deltaTime;
         else
@@ -98,8 +99,8 @@ public class Enemy : Entity
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(Hit ? MainGame.particleTexture : Texture, Position, null,
+        spriteBatch.Draw(Hit ? MainGame.particleTexture : Texture, ScreenPosition, null,
             Color.White, Rotation + MathHelper.PiOver2,
-            new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
+            new Vector2(16, 22), new Vector2(scaleX, scaleY), SpriteEffects.None, 0f);
     }
 }

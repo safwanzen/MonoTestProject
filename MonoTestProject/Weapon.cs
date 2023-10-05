@@ -12,7 +12,7 @@ public class Weapon : Entity
     private float shootTimer = 0.5f;
     private float chargeTimer = 0;
     private float maxChargeTime = 1f;
-    private bool isCharging = true;
+    private bool isCharging = false;
 
     public bool IsAttacking
     {

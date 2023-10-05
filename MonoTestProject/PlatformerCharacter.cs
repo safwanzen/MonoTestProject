@@ -44,6 +44,8 @@ public class PlatformerCharacter : Entity
 
     public override void Update(float deltaTime)
     {
+        base.Update(deltaTime);
+
         #region handle input
         if (InputManager.IsDown(dpadRight))
         {
@@ -92,20 +94,17 @@ public class PlatformerCharacter : Entity
         running = speed.Length() > 0;
         if (running) runningSprite.Update(deltaTime);
         weapon.Update(deltaTime);
-        base.Update(deltaTime);
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        var position = World.WorldToScreen(Position);
-
         if (running)
         {
-            runningSprite.Draw(spriteBatch, position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, World.scaleX, World.scaleY);
+            runningSprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
         }
         else
         {
-            standingSprite.Draw(spriteBatch, position, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, World.scaleX, World.scaleY);
+            standingSprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
         }
 
         base.Draw(spriteBatch);

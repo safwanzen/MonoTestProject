@@ -10,7 +10,6 @@ namespace MonoTestProject;
 
 public class DamageParticle : Entity
 {
-    public Vector2 Position = Vector2.Zero;
     public float Speed = 0;
 
     private float _rotationRad = 0;
@@ -54,6 +53,7 @@ public class DamageParticle : Entity
 
     public override void Update(float dt)
     {
+        base.Update(dt);
         lifetime -= dt;
         if (lifetime > initialLife * 0.75) Position += Speed * direction * dt;
         IsAlive = lifetime > 0f;
@@ -61,6 +61,6 @@ public class DamageParticle : Entity
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.DrawString(MainGame.Font, text, Position, Color.AntiqueWhite);
+        spriteBatch.DrawString(MainGame.Font, text, ScreenPosition, Color.AntiqueWhite);
     }
 }

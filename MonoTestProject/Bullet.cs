@@ -145,6 +145,7 @@ public class Bullet : Entity
 
     public override void Update(float deltaTime)
     {
+        base.Update(deltaTime);
         if (Wavy)
         {
             // wave trajectory
@@ -194,6 +195,6 @@ public class Bullet : Entity
         //}
         //spriteBatch.Draw(Sprite, Position, null, Color.White, rotationAngle,
         //    spriteOrigin, Vector2.One, SpriteEffects.None, 0f);
-        sprite.Draw(spriteBatch, Position, rotationAngle, Color.White);
+        sprite.Draw(spriteBatch, ScreenPosition, rotationAngle, Color.White, SpriteEffects.None, scaleX, scaleY);
     }
 }

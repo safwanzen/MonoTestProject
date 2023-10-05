@@ -132,8 +132,6 @@ public class MainGame : Game
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
                 new Vector2(sqw / 2, sqw / 2)
                 ),
-
-            World = World
         };
 
         //enemy = new Enemy(new Vector2(500, 200));
@@ -170,7 +168,7 @@ public class MainGame : Game
         if (InputManager.IsPressed(MouseButtons.RightButton))
         {
             //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
-            var e = new Enemy(mousestate.Position.ToVector2());
+            var e = new Enemy(World.ScreenToWorld(mousestate.Position.ToVector2()));
             Console.WriteLine("Enemy added {0}", e.GetHashCode());
             Enemies.Add(e);
         }
@@ -181,9 +179,9 @@ public class MainGame : Game
             && currmouseposition.X < ScreenWidth && currmouseposition.Y < ScreenHeight 
             && currmouseposition.X > 0 && currmouseposition.Y > 0)
         {
-            var diff = World.ScreenToWorld(currmouseposition) - World.ScreenToWorld(lastMousePosition);
-            xoff += diff.X;
-            yoff += diff.Y;
+            var diff = currmouseposition - lastMousePosition;
+            xoff += diff.X / xscale;
+            yoff += diff.Y / yscale;
             World.SetOffset(xoff, yoff);
         }
 
@@ -207,7 +205,6 @@ public class MainGame : Game
 
         var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
         var mousediff = newmouseworldcoord - oldmouseworldcoord;
-        Console.WriteLine(mousediff);
         xoff += mousediff.X;
         yoff += mousediff.Y;
         World.SetOffset(xoff, yoff);
