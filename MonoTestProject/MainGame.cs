@@ -118,13 +118,13 @@ public class MainGame : Game
         int sqw = 32;
         character = new PlatformerCharacter()
         {
-            Position = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
+            WorldPosition = new Vector2(ScreenWidth / 2, ScreenHeight / 2),
             runningSprite = new AnimatedSprite(
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
                 new Vector2(sqw / 2, sqw / 2),
                 3, 
-                durations: new float[] { .15f, .083f, .15f, .083f },
+                durations: new float[] { .12f, .05f, .12f, .05f },
                 true, 
                 sequence: new int[] { 1, 0, 2, 0 }),
             standingSprite = new Sprite(
@@ -228,7 +228,7 @@ public class MainGame : Game
             {
                 for (int a = 0; a < 5; a++)
                 {
-                    var p = new Particle(Bullets[i].Position, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.1f)
+                    var p = new Particle(Bullets[i].WorldPosition, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.1f)
                     {
                         Speed = 600
                     };
@@ -282,8 +282,8 @@ public class MainGame : Game
 
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedX: {character.Position.X}", new Vector2(10, 50), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedY: {character.Position.Y}", new Vector2(10, 70), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedX: {character.WorldPosition.X}", new Vector2(10, 50), Color.Black);
+        _spriteBatch.DrawString(Font, $"SpeedY: {character.WorldPosition.Y}", new Vector2(10, 70), Color.Black);
         //_spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);

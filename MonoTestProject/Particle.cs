@@ -17,7 +17,6 @@ public enum FadeEffect
 
 public class Particle : Entity
 {
-    public Vector2 Position = Vector2.Zero;
     public float Speed = 0;
 
     private float _rotationRad = 0;
@@ -42,9 +41,9 @@ public class Particle : Entity
 
     FadeEffect fadeEffect = FadeEffect.FadeOut;
 
-    public Particle(Vector2 position, float rotation, float lifetime, Texture2D texture, FadeEffect fadeEffect)
+    public Particle(Vector2 worldposition, float rotation, float lifetime, Texture2D texture, FadeEffect fadeEffect)
     {
-        Position = position;
+        WorldPosition = worldposition;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
@@ -53,9 +52,9 @@ public class Particle : Entity
         textureOrigin = new Vector2(texture.Width / 2, texture.Height / 2);
     }
 
-    public Particle(Vector2 position, float rotation, float lifetime)
+    public Particle(Vector2 worldposition, float rotation, float lifetime)
     {
-        Position = position;
+        WorldPosition = worldposition;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
@@ -65,8 +64,9 @@ public class Particle : Entity
 
     public override void Update(float dt)
     {
+        base.Update(dt);
         lifetime -= dt;
-        Position += Speed * direction * dt;
+        WorldPosition += Speed * direction * dt;
         if (fadeEffect == FadeEffect.FadeOutScale)
         {
             scale += dt * 2;
@@ -81,7 +81,7 @@ public class Particle : Entity
         if (fadeEffect == FadeEffect.FadeOut || fadeEffect == FadeEffect.FadeOutScale)
             color = Color.White * (lifetime / initialLife);
 
-        spriteBatch.Draw(texture, Position, null, color,
-            RotationRad, textureOrigin, new Vector2(scale), SpriteEffects.None, 0f);
+        spriteBatch.Draw(texture, ScreenPosition, null, color,
+            RotationRad, textureOrigin, new Vector2(scaleX, scaleY), SpriteEffects.None, 0f);
     }
 }

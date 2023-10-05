@@ -49,12 +49,12 @@ public class PlatformerCharacter : Entity
         #region handle input
         if (InputManager.IsDown(dpadRight))
         {
-            speed.X = 100;
+            speed.X = 150;
             facingRight = true;
         }
         else if (InputManager.IsDown(dpadLeft))
         {
-            speed.X = -100;
+            speed.X = -150;
             facingRight = false;
         }
         else
@@ -66,13 +66,13 @@ public class PlatformerCharacter : Entity
         if (InputManager.IsPressed(ABtn))
         {
             var dir = new Vector2(facingRight ? 1 : -1, 0);
-            weapon.Attack(Position + dir * 8, dir, 0);
+            weapon.Attack(WorldPosition + dir * 8, dir, 0);
         }
 
         if (InputManager.IsReleased(ABtn))
         {
             var dir = new Vector2(facingRight ? 1 : -1, 0);
-            weapon.ReleaseCharge(Position + dir * 8, dir, 0);
+            weapon.ReleaseCharge(WorldPosition + dir * 8, dir, 0);
             weapon.Charge(false);
         }
 
@@ -83,7 +83,7 @@ public class PlatformerCharacter : Entity
         #endregion
 
         #region movement
-        Position += speed * deltaTime;
+        WorldPosition += speed * deltaTime;
         //speed.Y += gravity * deltaTime;        
         #endregion
 
@@ -113,25 +113,25 @@ public class PlatformerCharacter : Entity
     private void CheckMapCollision()
     {
         // check for boundary collision
-        if (Position.X > MainGame.ScreenWidth - size.X / 2)
+        if (WorldPosition.X > MainGame.ScreenWidth - size.X / 2)
         {
-            Position.X = MainGame.ScreenWidth - size.X / 2;
+            WorldPosition.X = MainGame.ScreenWidth - size.X / 2;
             speed.X = 0;
         }
-        else if (Position.X < size.X / 2)
+        else if (WorldPosition.X < size.X / 2)
         {
-            Position.X = size.X / 2;
+            WorldPosition.X = size.X / 2;
             speed.X = 0;
         }
 
-        if (Position.Y > MainGame.ScreenHeight - size.Y / 2)
+        if (WorldPosition.Y > MainGame.ScreenHeight - size.Y / 2)
         {
-            Position.Y = MainGame.ScreenHeight - size.Y / 2;
+            WorldPosition.Y = MainGame.ScreenHeight - size.Y / 2;
             speed.Y = 0;
         }
-        else if (Position.Y < size.Y / 2)
+        else if (WorldPosition.Y < size.Y / 2)
         {
-            Position.Y = size.Y / 2;
+            WorldPosition.Y = size.Y / 2;
             speed.Y = 0;
         }
     }

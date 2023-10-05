@@ -30,13 +30,13 @@ public class Enemy : Entity
     private const float immunityTime = .5f;
     private float immunityCounter = 0;
 
-    public Enemy(Vector2 position)
+    public Enemy(Vector2 worldposition)
     {
         Texture = MainGame.handTexture;
         var w = Texture.Width;
         var h = Texture.Width;
-        Position = position;
-        Hitbox = new Rectangle((int)Position.X - w / 2, (int)Position.Y - h / 2, w, h);
+        WorldPosition = worldposition;
+        Hitbox = new Rectangle((int)worldposition.X - w / 2, (int)worldposition.Y - h / 2, w, h);
     }
 
     private void CheckParticleHit(Bullet particle)
@@ -52,13 +52,13 @@ public class Enemy : Entity
         Hit = true;
         damageFlashTimer = damageTime;
         //MainGame.Sounds[1].Play();
-        MainGame.Entities.Add(new DamageParticle(Position, -MathHelper.PiOver2, .8f, damage.ToString()) { Speed = 300 });
+        MainGame.Entities.Add(new DamageParticle(WorldPosition, -MathHelper.PiOver2, .8f, damage.ToString()) { Speed = 300 });
         if (HitPoints <= 0)
         {
             Random random = new();
-            for (int a = 0; a < 10; a++)
+            for (int a = 0; a < 6; a++)
             {
-                var p = new Particle(Position, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.5f)
+                var p = new Particle(WorldPosition, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.5f)
                 {
                     Speed = (float)random.NextDouble() * 500 + 50
                 };
@@ -80,10 +80,10 @@ public class Enemy : Entity
         else
             immunityCounter = 0;
 
-        Position += Direction * speed * deltaTime;
+        WorldPosition += Direction * speed * deltaTime;
 
-        Hitbox.X = (int)Position.X - Texture.Width / 2;
-        Hitbox.Y = (int)Position.Y - Texture.Height / 2;
+        Hitbox.X = (int)WorldPosition.X - Texture.Width / 2;
+        Hitbox.Y = (int)WorldPosition.Y - Texture.Height / 2;
         Hitbox.Width = Texture.Width;
         Hitbox.Height = Texture.Height;
 

@@ -33,18 +33,18 @@ public class DamageParticle : Entity
 
     FadeEffect fadeEffect = FadeEffect.FadeOut;
 
-    public DamageParticle(Vector2 position, float rotation, float lifetime, FadeEffect fadeEffect)
+    public DamageParticle(Vector2 worldposition, float rotation, float lifetime, FadeEffect fadeEffect)
     {
-        Position = position;
+        WorldPosition = worldposition;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
         this.fadeEffect = fadeEffect;
     }
 
-    public DamageParticle(Vector2 position, float rotation, float lifetime, string text)
+    public DamageParticle(Vector2 worldposition, float rotation, float lifetime, string text)
     {
-        Position = position;
+        WorldPosition = worldposition;
         RotationRad = rotation;
         initialLife = lifetime;
         this.lifetime = lifetime;
@@ -55,7 +55,7 @@ public class DamageParticle : Entity
     {
         base.Update(dt);
         lifetime -= dt;
-        if (lifetime > initialLife * 0.75) Position += Speed * direction * dt;
+        if (lifetime > initialLife * 0.75) WorldPosition += Speed * direction * dt;
         IsAlive = lifetime > 0f;
     }
 

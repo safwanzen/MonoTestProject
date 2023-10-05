@@ -7,11 +7,11 @@ public class Entity
 {
     public World World;
     public bool IsAlive = true; // mark for removal from list
-    public Vector2 Position;
+    public Vector2 WorldPosition;
 
     public float scaleX;
     public float scaleY;
-    public Vector2 ScreenPosition;
+    protected Vector2 ScreenPosition;
 
     public Entity()
     {
@@ -20,7 +20,7 @@ public class Entity
 
     public virtual void Update(float deltaTime)
     {
-        ScreenPosition = World.WorldToScreen(Position);
+        ScreenPosition = World.WorldToScreen(WorldPosition);
         scaleX = World.scaleX; 
         scaleY = World.scaleY;
     }

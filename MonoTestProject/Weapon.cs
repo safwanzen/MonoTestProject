@@ -24,6 +24,8 @@ public class Weapon : Entity
     {
         if (shootTimer <= 0)
         {
+            SpawnBlast(position, direction);
+         
             shootTimer = 0.05f;
             MainGame.Bullets.Add(new(
                 position, direction, rotation,
@@ -32,9 +34,10 @@ public class Weapon : Entity
                     new Vector2(6, 6))
                 )
             {
-                Speed = 400,
+                Speed = 800,
                 Damage = 4
             });
+
         }
     }
 
@@ -42,8 +45,10 @@ public class Weapon : Entity
     {
         if (chargeTimer > maxChargeTime)
         {
+            SpawnBlast(position, direction);
+
             chargeTimer = 0;
-            var chargedspeed = 800f;
+            var chargedspeed = 1000f;
             //MainGame.Bullets.Add(new Bullet(bulletpos, facingDirection, 0, 28, 28, MainGame.BulletTextureXLarge)
             MainGame.Bullets.Add(new Bullet(position, direction, 0,
                 new Sprite(MainGame.BulletTextureLarge,
@@ -78,6 +83,22 @@ public class Weapon : Entity
 
             MainGame.Bullets.Add(b1);
             MainGame.Bullets.Add(b2);
+        }
+    }
+
+    private void SpawnBlast(Vector2 position, Vector2 direction)
+    {
+        direction.Normalize();
+
+        Random r = new();
+
+        for (int a = 0; a < 3; a++)
+        {
+            var p = new Particle(position + new Vector2(direction.X * 20, 0), (float)r.NextDouble() * MathHelper.Pi * 2, 0.1f)
+            {
+                Speed = 300
+            };
+            MainGame.Entities.Add(p);
         }
     }
 

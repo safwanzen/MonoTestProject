@@ -86,7 +86,7 @@ public class Bullet : Entity
     {
         //Random r = new Random();
         //rotationSpeed = (float)r.NextDouble() * 90 - 45;
-        Position = position;
+        WorldPosition = position;
         Direction = direction;
         rotationAngle = rotation;
         this.sprite = sprite;
@@ -106,8 +106,8 @@ public class Bullet : Entity
 
     private void UpdateHitBox()
     {
-        Hitbox.X = (int)Position.X - Hitbox.Width / 2;
-        Hitbox.Y = (int)Position.Y - Hitbox.Height / 2;
+        Hitbox.X = (int)WorldPosition.X - Hitbox.Width / 2;
+        Hitbox.Y = (int)WorldPosition.Y - Hitbox.Height / 2;
     }
 
     private void CheckHit()
@@ -139,8 +139,8 @@ public class Bullet : Entity
 
     private bool CheckOutOfBounds()
     {
-        return Position.X > MainGame.ScreenWidth || Position.X < 0
-            || Position.Y < 0 || Position.Y > MainGame.ScreenHeight;
+        return WorldPosition.X > MainGame.ScreenWidth || WorldPosition.X < 0
+            || WorldPosition.Y < 0 || WorldPosition.Y > MainGame.ScreenHeight;
     }
 
     public override void Update(float deltaTime)
@@ -156,13 +156,13 @@ public class Bullet : Entity
             //var cosT = (float)Math.Cos(distanceTravelled);
             var yAmp = 30f * timescale;
             var xAmp = 15f * timescale;
-            Position.X += (xAmp * cosA * sinT + yAmp * sinA * sinT + Speed * Direction.X) * deltaTime;
-            Position.Y += (xAmp * sinA * sinT - yAmp * cosA * sinT + Speed * Direction.Y) * deltaTime;
+            WorldPosition.X += (xAmp * cosA * sinT + yAmp * sinA * sinT + Speed * Direction.X) * deltaTime;
+            WorldPosition.Y += (xAmp * sinA * sinT - yAmp * cosA * sinT + Speed * Direction.Y) * deltaTime;
         }
         else
         {
             // straight course
-            Position += Direction * Speed * deltaTime;
+            WorldPosition += Direction * Speed * deltaTime;
         }
 
         rotationAngle += rotationSpeed * deltaTime;

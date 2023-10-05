@@ -57,11 +57,11 @@ public class Character : Entity
     public override void Update(float deltaTime)
     {
         var mousestate = Mouse.GetState();
-        var facingDirection = mousestate.Position.ToVector2() - Position;
+        var facingDirection = mousestate.Position.ToVector2() - WorldPosition;
         if (facingDirection.Length() > 0) facingDirection.Normalize();
         Rotation = (float)Math.Atan2(facingDirection.Y, facingDirection.X);
 
-        var bulletpos = Position + facingDirection * 20;
+        var bulletpos = WorldPosition + facingDirection * 20;
 
         shootParticleTimer -= deltaTime;
         //if (MainGame.PrevLMBState == ButtonState.Released && mousestate.LeftButton == ButtonState.Pressed && shootParticleTimer <= 0)
@@ -91,7 +91,6 @@ public class Character : Entity
             });
 
             MainGame.Sounds[2].Play();
-
         }
 
         //if (mousestate.LeftButton == ButtonState.Pressed)
@@ -152,7 +151,7 @@ public class Character : Entity
 
                 for (int i = 0; i < 10; i++)
                 {
-                    var p = new Particle(Position, Rotation + (float)random.NextDouble() * MathHelper.Pi - MathHelper.PiOver2, 0.3f)
+                    var p = new Particle(WorldPosition, Rotation + (float)random.NextDouble() * MathHelper.Pi - MathHelper.PiOver2, 0.3f)
                     {
                         Speed = (float)random.NextDouble() * 400 + 100
                     };
@@ -201,7 +200,7 @@ public class Character : Entity
         {
             Speed = Vector2.Normalize(Speed) * maxSpeed;
         }
-        Position += Speed * deltaTime;
+        WorldPosition += Speed * deltaTime;
         //if (Speed.Length() > 0) { Speed *= 0.95f; }
         Speed *= 0.95f;
         if (Math.Abs(Speed.X) < 3f) Speed.X = 0;
@@ -212,25 +211,25 @@ public class Character : Entity
  #endregion
 
         // check for boundary collision
-        if (Position.X > MainGame.ScreenWidth - Texture.Width / 2)
+        if (WorldPosition.X > MainGame.ScreenWidth - Texture.Width / 2)
         {
-            Position.X = MainGame.ScreenWidth - Texture.Width / 2;
+            WorldPosition.X = MainGame.ScreenWidth - Texture.Width / 2;
             Speed.X = 0;
         }
-        else if (Position.X < Texture.Width / 2)
+        else if (WorldPosition.X < Texture.Width / 2)
         {
-            Position.X = Texture.Width / 2;
+            WorldPosition.X = Texture.Width / 2;
             Speed.X = 0;
         }
 
-        if (Position.Y > MainGame.ScreenHeight - Texture.Height / 2)
+        if (WorldPosition.Y > MainGame.ScreenHeight - Texture.Height / 2)
         {
-            Position.Y = MainGame.ScreenHeight - Texture.Height / 2;
+            WorldPosition.Y = MainGame.ScreenHeight - Texture.Height / 2;
             Speed.Y = 0;
         }
-        else if (Position.Y < Texture.Height / 2)
+        else if (WorldPosition.Y < Texture.Height / 2)
         {
-            Position.Y = Texture.Height / 2;
+            WorldPosition.Y = Texture.Height / 2;
             Speed.Y = 0;
         }
 
@@ -246,7 +245,7 @@ public class Character : Entity
         if (currTrailSpawnTime > trailSpawnTime)
         {
             currTrailSpawnTime = 0;
-            trails[start] = (Position, Rotation);
+            trails[start] = (WorldPosition, Rotation);
             start++;
             if (count < trailSize - 1) count++;
             if (start > trailSize - 1) start = 0;
@@ -268,6 +267,6 @@ public class Character : Entity
         //spriteBatch.Draw(Texture, Position, null,
         //    !characterFlashing ? Color.White : Color.OrangeRed, Rotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
-        sprite.Draw(spriteBatch, Position, Rotation + MathHelper.PiOver2, !characterFlashing ? Color.White : Color.OrangeRed);
+        sprite.Draw(spriteBatch, WorldPosition, Rotation + MathHelper.PiOver2, !characterFlashing ? Color.White : Color.OrangeRed);
     }
 }
