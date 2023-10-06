@@ -112,7 +112,6 @@ public class Bullet : Entity
 
     private void CheckHit()
     {
-        if (WasHit) return;
         if (CheckOutOfBounds())
         {
             MainGame.Sounds[0].Play();
@@ -121,6 +120,21 @@ public class Bullet : Entity
         else
         {
             CheckEnemyCollision();
+        }
+
+        if (WasHit)
+        {
+            MainGame.Entities.Add(
+                new ExplosionParticle(
+                    WorldPosition, 0, 1, MainGame.ExplosionBeginTexture, FadeEffect.None));
+            for (int a = 0; a < 5; a++)
+            {
+                var p = new Particle(WorldPosition, 3f, 0.1f)
+                {
+                    Speed = 600
+                };
+                MainGame.Entities.Add(p);
+            }
         }
     }
 

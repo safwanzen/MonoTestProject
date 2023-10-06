@@ -29,7 +29,6 @@ public class DamageParticle : Entity
     private float lifetime = 0f;
     private string text;
     private float initialLife;
-    private float scale = 1f;
 
     FadeEffect fadeEffect = FadeEffect.FadeOut;
 

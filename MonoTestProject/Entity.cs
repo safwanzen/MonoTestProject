@@ -11,7 +11,7 @@ public class Entity
 
     public float scaleX;
     public float scaleY;
-    protected Vector2 ScreenPosition;
+    public Vector2 ScreenPosition { protected set; get; }
 
     public Entity()
     {

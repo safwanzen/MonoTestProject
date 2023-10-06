@@ -56,15 +56,22 @@ public class Enemy : Entity
         if (HitPoints <= 0)
         {
             Random random = new();
-            for (int a = 0; a < 6; a++)
-            {
-                var p = new Particle(WorldPosition, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.5f)
-                {
-                    Speed = (float)random.NextDouble() * 500 + 50
-                };
-                //MainGame.Sounds[5].Play(0.1f, 0, 0);
-                MainGame.Entities.Add(p);
-            }
+
+            MainGame.Entities.Add(
+                new ExplosionParticle(
+                    WorldPosition, 0f,
+                    1f, MainGame.ExplosionBeginTexture, FadeEffect.None
+                ));
+
+            //for (int a = 0; a < 4; a++)
+            //{
+            //    var p = new Particle(WorldPosition, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.5f)
+            //    {
+            //        Speed = (float)random.NextDouble() * 500 + 50
+            //    };
+            //    //MainGame.Sounds[5].Play(0.1f, 0, 0);
+            //    MainGame.Entities.Add(p);
+            //}
             MainGame.Enemies.Remove(this);
             return true;
         }

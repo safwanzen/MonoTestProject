@@ -64,6 +64,7 @@ public class Particle : Entity
 
     public override void Update(float dt)
     {
+        if (!IsAlive) return;
         base.Update(dt);
         lifetime -= dt;
         WorldPosition += Speed * direction * dt;

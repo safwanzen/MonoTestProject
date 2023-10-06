@@ -10,11 +10,13 @@ namespace MonoTestProject;
 
 public class AnimatedSprite : Sprite
 {
-    private int numFrames;
-    private int frameIndex;
-    private bool isLooping;
+    public Action OnAnimationEnd = () => { }; 
 
-    private float fps = 0; // if duration is constant throughout animation
+    private readonly int numFrames;
+    private int frameIndex;
+    private readonly bool isLooping;
+
+    private readonly float fps = 0; // if duration is constant throughout animation
 
     private int durationIndex = 0;
     private float duration = 0;
@@ -107,6 +109,7 @@ public class AnimatedSprite : Sprite
             {
                 if (isLooping) sequenceIndex = 0;
                 else sequenceIndex = sequence.Length - 1;
+                OnAnimationEnd();
             }
 
             frameIndex = sequence[sequenceIndex];
@@ -120,6 +123,7 @@ public class AnimatedSprite : Sprite
             {
                 if (isLooping) frameIndex = 0;
                 else frameIndex = numFrames - 1;
+                OnAnimationEnd();
             }
             durationIndex = frameIndex;
         }

@@ -26,7 +26,10 @@ public class MainGame : Game
     public static Texture2D BulletTextureLarge;
     public static Texture2D BulletTextureXLarge;
     public static Texture2D BulletSheet;
+    public static Texture2D ExplosionBeginTexture;
     public Texture2D CaveStoryCharSheet;
+
+    public static Texture2D Pixel;
 
     public static SoundEffect BulletHitSound;
     public static SoundEffect BulletFireSound;
@@ -47,7 +50,7 @@ public class MainGame : Game
     public static World World = new();
 
     PlatformerCharacter character;
-    
+
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -65,6 +68,9 @@ public class MainGame : Game
         SoundEffect.MasterVolume = .0f;
     }
 
+    VertexPositionColor[] _vertexPositionColors;
+    BasicEffect _basicEffect;
+
     protected override void LoadContent()
     {
         Console.WriteLine("loadcontent called");
@@ -79,6 +85,10 @@ public class MainGame : Game
         BulletTextureXLarge = Content.Load<Texture2D>("ms_bullet_round_xlarge");
         BulletSheet = Content.Load<Texture2D>("ms_bullet_16x48");
         CaveStoryCharSheet = Content.Load<Texture2D>("cave-story-wii-sprite-sheet-transparent");
+        ExplosionBeginTexture = Content.Load<Texture2D>("explosion-start-32x32");
+
+        Pixel = new Texture2D(GraphicsDevice, 1, 1);
+        Pixel.SetData(new Color[] { Color.White });
 
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
         BulletFireSound = Content.Load<SoundEffect>("Audio/ST01_00_00002");
@@ -123,9 +133,9 @@ public class MainGame : Game
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
                 new Vector2(sqw / 2, sqw / 2),
-                3, 
+                3,
                 durations: new float[] { .12f, .05f, .12f, .05f },
-                true, 
+                true,
                 sequence: new int[] { 1, 0, 2, 0 }),
             standingSprite = new Sprite(
                 CaveStoryCharSheet,
@@ -136,10 +146,20 @@ public class MainGame : Game
 
         //enemy = new Enemy(new Vector2(500, 200));
         //Entities.Add(enemy);
+        _vertexPositionColors = new[]
+        {
+            new VertexPositionColor(new Vector3(0, 0, 1), Color.White),
+            new VertexPositionColor(new Vector3(10, 0, 1), Color.White),
+            new VertexPositionColor(new Vector3(10, 10, 1), Color.White),
+            new VertexPositionColor(new Vector3(0, 10, 1), Color.White)
+        };
+        _basicEffect = new BasicEffect(GraphicsDevice);
+        _basicEffect.World = Matrix.CreateOrthographicOffCenter(
+            0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 0, 0, 1);
     }
 
     Random random = new Random();
-    
+
     private float xoff = 0, yoff = 0;
     private float xscale = 1, yscale = 1;
     private float xscreencenter, yscreencenter;
@@ -157,13 +177,8 @@ public class MainGame : Game
 
         var mousestate = Mouse.GetState(Window);
 
-        character.Update(deltaTime);
-        
-        foreach (var enemy in Enemies)
-        {
-            enemy.Update(deltaTime);
-        }
-        
+        xoff = World.ScreenToWorld(character.ScreenPosition.X - ScreenWidth / 2, 0).X;
+
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
         if (InputManager.IsPressed(MouseButtons.RightButton))
         {
@@ -175,8 +190,8 @@ public class MainGame : Game
 
         var currmouseposition = mousestate.Position.ToVector2();
 
-        if (InputManager.IsDown(MouseButtons.LeftButton) 
-            && currmouseposition.X < ScreenWidth && currmouseposition.Y < ScreenHeight 
+        if (InputManager.IsDown(MouseButtons.LeftButton)
+            && currmouseposition.X < ScreenWidth && currmouseposition.Y < ScreenHeight
             && currmouseposition.X > 0 && currmouseposition.Y > 0)
         {
             var diff = currmouseposition - lastMousePosition;
@@ -203,14 +218,21 @@ public class MainGame : Game
             World.scaleY = yscale;
         }
 
-        var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
-        var mousediff = newmouseworldcoord - oldmouseworldcoord;
-        xoff += mousediff.X;
-        yoff += mousediff.Y;
-        World.SetOffset(xoff, yoff);
+        //var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
+        //var mousediff = newmouseworldcoord - oldmouseworldcoord;
+        //xoff += mousediff.X;
+        //yoff += mousediff.Y;        
+        World.SetOffset(-xoff, yoff);
 
         lastMousePosition = mousestate.Position.ToVector2();
         lastScrollWheel = mousestate.ScrollWheelValue;
+
+        character.Update(deltaTime);
+
+        foreach (var enemy in Enemies)
+        {
+            enemy.Update(deltaTime);
+        }
 
         for (int i = 0; i < Entities.Count;)
         {
@@ -224,21 +246,13 @@ public class MainGame : Game
 
         for (int i = 0; i < Bullets.Count;)
         {
+            Bullets[i].Update(deltaTime);
             if (Bullets[i].WasHit)
             {
-                for (int a = 0; a < 5; a++)
-                {
-                    var p = new Particle(Bullets[i].WorldPosition, (float)(random.NextDouble() * MathHelper.Pi * 2), 0.1f)
-                    {
-                        Speed = 600
-                    };
-                    Entities.Add(p);
-                }
                 Bullets.RemoveAt(i);
             }
             else
             {
-                Bullets[i].Update(deltaTime);
                 i++;
             }
         }
@@ -255,6 +269,14 @@ public class MainGame : Game
         //Console.WriteLine("draw \t {0}", gameTime.TotalGameTime);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
+        EffectTechnique effectTechnique = _basicEffect.Techniques[0];
+        EffectPassCollection effectPassCollection = effectTechnique.Passes;
+        foreach (EffectPass pass in effectPassCollection)
+        {
+            pass.Apply();
+            GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, _vertexPositionColors, 0, 3);
+        }
+
         // TODO: Add your drawing code here
         _spriteBatch.Begin();
 
@@ -265,7 +287,7 @@ public class MainGame : Game
             entity.Draw(_spriteBatch);
         }
 
-        foreach(var trail in Entities)
+        foreach (var trail in Entities)
         {
             trail.Draw(_spriteBatch);
         }
@@ -290,7 +312,19 @@ public class MainGame : Game
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
 
+        DrawRect(_spriteBatch, (int)World.WorldToScreen(character.WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, character.WorldPosition.Y - 14).Y, (int)(xscale * 16), (int)(yscale * 30), Color.Red * .5f);
+
         _spriteBatch.End();
         base.Draw(gameTime);
+    }
+
+    private void DrawRect(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color)
+    {
+        spriteBatch.Draw(Pixel, new Rectangle(x, y, width, height), color);        
+    }
+
+    private void DrawRectWireframe(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color, int linethickness)
+    {
+        int offset = -linethickness / 2;
     }
 }

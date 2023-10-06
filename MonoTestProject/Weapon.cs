@@ -91,6 +91,11 @@ public class Weapon : Entity
         direction.Normalize();
 
         Random r = new();
+        //MainGame.Entities.Add(
+        //    new ExplosionParticle(
+        //        position + new Vector2(direction.X * 20, 0), 0f,
+        //        0.9f, MainGame.ExplosionBeginTexture, FadeEffect.None
+        //    ));
 
         for (int a = 0; a < 3; a++)
         {
