@@ -12,8 +12,8 @@ public class AnimatedSprite : Sprite
 {
     public Action OnAnimationEnd = () => { }; 
 
+    public int FrameIndex { get; private set; }
     private readonly int numFrames;
-    private int frameIndex;
     private readonly bool isLooping;
 
     private readonly float fps = 0; // if duration is constant throughout animation
@@ -42,7 +42,7 @@ public class AnimatedSprite : Sprite
 
         if (sequence != null)
         {
-            frameIndex = sequence[0];
+            FrameIndex = sequence[0];
         }
     }
 
@@ -74,7 +74,7 @@ public class AnimatedSprite : Sprite
 
         if (sequence != null)
         {
-            frameIndex = sequence[0];
+            FrameIndex = sequence[0];
             pairDurationsWithSequence = sequence.Length == durations.Length;
         }
     }
@@ -82,7 +82,7 @@ public class AnimatedSprite : Sprite
     public override void Update(float deltaTime)
     {
         currentDuration += deltaTime;
-        sourceRect.X = frameIndex * sourceRect.Width;
+        sourceRect.X = FrameIndex * sourceRect.Width;
         
         if (durations != null) AnimateVariableDuration();
         else if (fps > 0f) AnimateFixedDuration();
@@ -91,8 +91,8 @@ public class AnimatedSprite : Sprite
     public void ResetAnimation()
     {
         currentDuration = 0f;
-        if (sequence != null) frameIndex = sequence[0];
-        else frameIndex = 0;
+        if (sequence != null) FrameIndex = sequence[0];
+        else FrameIndex = 0;
         sequenceIndex = 0;
         durationIndex = 0;
     }
@@ -112,20 +112,20 @@ public class AnimatedSprite : Sprite
                 OnAnimationEnd();
             }
 
-            frameIndex = sequence[sequenceIndex];
+            FrameIndex = sequence[sequenceIndex];
             if (pairDurationsWithSequence) durationIndex = sequenceIndex;
-            else durationIndex = frameIndex;
+            else durationIndex = FrameIndex;
         }
         else
         {
-            ++frameIndex;
-            if (frameIndex > numFrames - 1)
+            ++FrameIndex;
+            if (FrameIndex > numFrames - 1)
             {
-                if (isLooping) frameIndex = 0;
-                else frameIndex = numFrames - 1;
+                if (isLooping) FrameIndex = 0;
+                else FrameIndex = numFrames - 1;
                 OnAnimationEnd();
             }
-            durationIndex = frameIndex;
+            durationIndex = FrameIndex;
         }
     }
 

@@ -74,6 +74,8 @@ public class MainGame : Game
     protected override void LoadContent()
     {
         Console.WriteLine("loadcontent called");
+
+        GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         // TODO: use this.Content to load your game content here
@@ -177,7 +179,7 @@ public class MainGame : Game
 
         var mousestate = Mouse.GetState(Window);
 
-        xoff = World.ScreenToWorld(character.ScreenPosition.X - ScreenWidth / 2, 0).X;
+        //xoff = World.ScreenToWorld(character.ScreenPosition.X - ScreenWidth / 2, 0).X;
 
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
         if (InputManager.IsPressed(MouseButtons.RightButton))
@@ -218,11 +220,11 @@ public class MainGame : Game
             World.scaleY = yscale;
         }
 
-        //var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
-        //var mousediff = newmouseworldcoord - oldmouseworldcoord;
-        //xoff += mousediff.X;
-        //yoff += mousediff.Y;        
-        World.SetOffset(-xoff, yoff);
+        var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
+        var mousediff = newmouseworldcoord - oldmouseworldcoord;
+        xoff += mousediff.X;
+        yoff += mousediff.Y;
+        World.SetOffset(xoff, yoff);
 
         lastMousePosition = mousestate.Position.ToVector2();
         lastScrollWheel = mousestate.ScrollWheelValue;
@@ -269,16 +271,16 @@ public class MainGame : Game
         //Console.WriteLine("draw \t {0}", gameTime.TotalGameTime);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        EffectTechnique effectTechnique = _basicEffect.Techniques[0];
-        EffectPassCollection effectPassCollection = effectTechnique.Passes;
-        foreach (EffectPass pass in effectPassCollection)
-        {
-            pass.Apply();
-            GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, _vertexPositionColors, 0, 3);
-        }
+        //EffectTechnique effectTechnique = _basicEffect.Techniques[0];
+        //EffectPassCollection effectPassCollection = effectTechnique.Passes;
+        //foreach (EffectPass pass in effectPassCollection)
+        //{
+        //    pass.Apply();
+        //    GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, _vertexPositionColors, 0, 3);
+        //}
 
         // TODO: Add your drawing code here
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
 
         character.Draw(_spriteBatch);
 
@@ -320,7 +322,7 @@ public class MainGame : Game
 
     private void DrawRect(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color)
     {
-        spriteBatch.Draw(Pixel, new Rectangle(x, y, width, height), color);        
+        spriteBatch.Draw(Pixel, new Rectangle(x, y, width, height), color);
     }
 
     private void DrawRectWireframe(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color, int linethickness)

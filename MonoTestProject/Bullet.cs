@@ -153,13 +153,33 @@ public class Bullet : Entity
 
     private bool CheckOutOfBounds()
     {
-        return WorldPosition.X > MainGame.ScreenWidth || WorldPosition.X < 0
-            || WorldPosition.Y < 0 || WorldPosition.Y > MainGame.ScreenHeight;
+        if (WorldPosition.X > MainGame.ScreenWidth)
+        {
+            WorldPosition.X = MainGame.ScreenWidth;
+            return true;
+        }
+        if (WorldPosition.X < 0)
+        {
+            WorldPosition.X = 0;
+            return true;
+        }
+        if (WorldPosition.Y < 0)
+        {
+            WorldPosition.Y = 0;
+            return true;
+        }
+        if (WorldPosition.Y > MainGame.ScreenHeight)
+        {
+            WorldPosition.Y = MainGame.ScreenHeight;
+            return true;
+        }
+        return false;
+        //return WorldPosition.X > MainGame.ScreenWidth || WorldPosition.X < 0
+        //    || WorldPosition.Y < 0 || WorldPosition.Y > MainGame.ScreenHeight;
     }
 
     public override void Update(float deltaTime)
     {
-        base.Update(deltaTime);
         if (Wavy)
         {
             // wave trajectory
@@ -198,6 +218,7 @@ public class Bullet : Entity
         sprite.Update(deltaTime);
         UpdateHitBox();
         CheckHit();
+        base.Update(deltaTime);
     }
 
     public override void Draw(SpriteBatch spriteBatch)

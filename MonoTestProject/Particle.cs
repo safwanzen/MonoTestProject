@@ -65,7 +65,6 @@ public class Particle : Entity
     public override void Update(float dt)
     {
         if (!IsAlive) return;
-        base.Update(dt);
         lifetime -= dt;
         WorldPosition += Speed * direction * dt;
         if (fadeEffect == FadeEffect.FadeOutScale)
@@ -73,6 +72,7 @@ public class Particle : Entity
             scale += dt * 2;
         }
         IsAlive = lifetime > 0f;
+        base.Update(dt);
     }
 
     public override void Draw(SpriteBatch spriteBatch)

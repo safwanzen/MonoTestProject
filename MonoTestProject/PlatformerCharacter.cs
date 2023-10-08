@@ -44,8 +44,6 @@ public class PlatformerCharacter : Entity
 
     public override void Update(float deltaTime)
     {
-        base.Update(deltaTime);
-
         #region handle input
         if (InputManager.IsDown(dpadRight))
         {
@@ -94,6 +92,7 @@ public class PlatformerCharacter : Entity
         running = speed.Length() > 0;
         if (running) runningSprite.Update(deltaTime);
         weapon.Update(deltaTime);
+        base.Update(deltaTime);
     }
 
     public override void Draw(SpriteBatch spriteBatch)

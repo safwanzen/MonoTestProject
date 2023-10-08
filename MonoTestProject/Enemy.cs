@@ -81,7 +81,6 @@ public class Enemy : Entity
 
     public override void Update(float deltaTime)
     {
-        base.Update(deltaTime);
         if (immunityCounter > 0)
             immunityCounter -= deltaTime;
         else
@@ -102,6 +101,7 @@ public class Enemy : Entity
         {
             Hit = false;
         }
+        base.Update(deltaTime);
     }
 
     public override void Draw(SpriteBatch spriteBatch)
