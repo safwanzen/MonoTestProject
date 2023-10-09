@@ -78,6 +78,8 @@ public class MainGame : Game
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+        Pixel = new Texture2D(GraphicsDevice, 1, 1);
+
         // TODO: use this.Content to load your game content here
         Font = Content.Load<SpriteFont>("TextFont");
         handTexture = Content.Load<Texture2D>("hand");
@@ -89,7 +91,6 @@ public class MainGame : Game
         CaveStoryCharSheet = Content.Load<Texture2D>("cave-story-wii-sprite-sheet-transparent");
         ExplosionBeginTexture = Content.Load<Texture2D>("explosion-start-32x32");
 
-        Pixel = new Texture2D(GraphicsDevice, 1, 1);
         Pixel.SetData(new Color[] { Color.White });
 
         BulletHitSound = Content.Load<SoundEffect>("Audio/MMX3_SE_00044");
@@ -206,16 +207,16 @@ public class MainGame : Game
 
         if (lastScrollWheel - mousestate.ScrollWheelValue > 0)
         {
-            xscale *= 1.1f;
-            yscale *= 1.1f;
+            xscale *= 2f;
+            yscale *= 2f;
             World.scaleX = xscale;
             World.scaleY = yscale;
         }
 
         if (lastScrollWheel - mousestate.ScrollWheelValue < 0)
         {
-            xscale *= .9f;
-            yscale *= .9f;
+            xscale *= .5f;
+            yscale *= .5f;
             World.scaleX = xscale;
             World.scaleY = yscale;
         }
@@ -302,6 +303,8 @@ public class MainGame : Game
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
+        _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)lastMousePosition.X, (int)lastMousePosition.Y, Color.White);
+
         _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
 
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
@@ -313,20 +316,8 @@ public class MainGame : Game
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
-
-        DrawRect(_spriteBatch, (int)World.WorldToScreen(character.WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, character.WorldPosition.Y - 14).Y, (int)(xscale * 16), (int)(yscale * 30), Color.Red * .5f);
-
+        
         _spriteBatch.End();
         base.Draw(gameTime);
-    }
-
-    private void DrawRect(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color)
-    {
-        spriteBatch.Draw(Pixel, new Rectangle(x, y, width, height), color);
-    }
-
-    private void DrawRectWireframe(SpriteBatch spriteBatch, int x, int y, int width, int height, Color color, int linethickness)
-    {
-        int offset = -linethickness / 2;
     }
 }
