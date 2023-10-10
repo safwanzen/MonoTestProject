@@ -165,6 +165,11 @@ public class MainGame : Game
 
     private float xoff = 0, yoff = 0;
     private float xscale = 1, yscale = 1;
+
+    private float targetScale = 1;
+    private float maxtargetscale = 8f;
+    private float mintargetscale = 0.5f;
+
     private float xscreencenter, yscreencenter;
     Vector2 lastMousePosition;
     private int lastScrollWheel;
@@ -207,18 +212,34 @@ public class MainGame : Game
 
         if (lastScrollWheel - mousestate.ScrollWheelValue > 0)
         {
-            xscale *= 2f;
-            yscale *= 2f;
-            World.scaleX = xscale;
-            World.scaleY = yscale;
+            targetScale *= 2f;
+            if (targetScale > maxtargetscale) targetScale = maxtargetscale;
+            Console.WriteLine("target scale: {0}", targetScale);
         }
 
         if (lastScrollWheel - mousestate.ScrollWheelValue < 0)
         {
-            xscale *= .5f;
-            yscale *= .5f;
-            World.scaleX = xscale;
-            World.scaleY = yscale;
+            targetScale *= .5f;
+            if (targetScale < mintargetscale) targetScale = mintargetscale;
+            Console.WriteLine("target scale: {0}", targetScale);
+        }
+
+        if (targetScale != xscale)
+        {
+            float scalediff = targetScale - xscale;
+            //float scalediffabs = Math.Abs(scalediff);
+            if (scalediff > .001f || scalediff < -.001f)
+            {
+                //Console.WriteLine(scalediff);
+                xscale += scalediff / 4;
+                yscale = xscale;
+                World.scaleX = xscale;
+                World.scaleY = yscale;
+            }
+            else
+            {
+                xscale = yscale = targetScale;
+            }
         }
 
         var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
@@ -316,7 +337,7 @@ public class MainGame : Game
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
-        
+
         _spriteBatch.End();
         base.Draw(gameTime);
     }
