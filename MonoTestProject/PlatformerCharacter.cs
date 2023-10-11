@@ -25,6 +25,10 @@ public class PlatformerCharacter : Entity
     private float shootTimer = 0.05f;
 
     private Weapon weapon = new();
+    private bool isOnGround = true;
+    private bool isJumping = false;
+
+    private float jumpVelocity = 50f;
 
     #region controls
     private const Keys dpadUp = Keys.W;
@@ -47,12 +51,12 @@ public class PlatformerCharacter : Entity
         #region handle input
         if (InputManager.IsDown(dpadRight))
         {
-            speed.X = 150;
+            speed.X = 180;
             facingRight = true;
         }
         else if (InputManager.IsDown(dpadLeft))
         {
-            speed.X = -150;
+            speed.X = -180;
             facingRight = false;
         }
         else
@@ -61,35 +65,60 @@ public class PlatformerCharacter : Entity
             runningSprite.ResetAnimation();
         }
 
-        if (InputManager.IsPressed(ABtn))
+        if (InputManager.IsPressed(BBtn))
         {
             var dir = new Vector2(facingRight ? 1 : -1, 0);
             weapon.Attack(WorldPosition + dir * 8, dir, 0);
         }
 
-        if (InputManager.IsReleased(ABtn))
+        if (InputManager.IsReleased(BBtn))
         {
             var dir = new Vector2(facingRight ? 1 : -1, 0);
             weapon.ReleaseCharge(WorldPosition + dir * 8, dir, 0);
             weapon.Charge(false);
         }
 
-        if (InputManager.IsDown(ABtn))
+        if (InputManager.IsDown(BBtn))
         {
             weapon.Charge(true);
+        }
+
+        if (InputManager.IsPressed(dpadUp) && isOnGround && !isJumping)
+        {
+            Console.WriteLine("jumping");
+            isOnGround = false;
+            isJumping = true;
+            speed.Y = -500f; // -jumpVelocity
+        }
+
+        if (InputManager.IsReleased(dpadUp) && isJumping)
+        {
+            Console.WriteLine("jump released");
+            isJumping = false;
+            if (speed.Y < 0) speed.Y *= 0.1f;
         }
         #endregion
 
         #region movement
+
         WorldPosition += speed * deltaTime;
-        //speed.Y += gravity * deltaTime;        
+
+        if (isOnGround)
+        {
+            isJumping = false;
+            speed.Y = 0;
+        }
+        else
+        {
+            speed.Y += /*gravity*/ 1500f * deltaTime;
+        }
         #endregion
 
         #region collision
         CheckMapCollision();
         #endregion
 
-        running = speed.Length() > 0;
+        running = Math.Abs(speed.X) > 0 && isOnGround;
         if (running) runningSprite.Update(deltaTime);
         weapon.Update(deltaTime);
         base.Update(deltaTime);
@@ -106,8 +135,8 @@ public class PlatformerCharacter : Entity
             standingSprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
         }
 
-        spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Red * .5f);
-        spriteBatch.DrawRectWireframe((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Cyan);
+        //spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Red * .5f);
+        //spriteBatch.DrawRectWireframe((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Cyan);
 
         base.Draw(spriteBatch);
     }
@@ -130,6 +159,7 @@ public class PlatformerCharacter : Entity
         {
             WorldPosition.Y = MainGame.ScreenHeight - size.Y / 2;
             speed.Y = 0;
+            isOnGround = true;
         }
         else if (WorldPosition.Y < size.Y / 2)
         {

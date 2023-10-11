@@ -114,7 +114,7 @@ public class Bullet : Entity
     {
         if (CheckOutOfBounds())
         {
-            MainGame.Sounds[0].Play();
+            //MainGame.Sounds[0].Play();
             WasHit = true;
         }
         else
