@@ -49,6 +49,36 @@ public class MainGame : Game
 
     PlatformerCharacter character;
 
+    VertexPositionColor[] _vertexPositionColors;
+    BasicEffect _basicEffect;
+
+    Random random = new Random();
+
+    private float xoff = 0, yoff = 0;
+    private float xscale = 1, yscale = 1;
+
+    private float targetScale = 1;
+    private float maxtargetscale = 8f;
+    private float mintargetscale = 0.5f;
+
+    private float xscreencenter, yscreencenter;
+    Vector2 lastMousePosition;
+    Vector2 mouseWorldPosTile;
+    Vector2 mouseScreenPosTile;
+    private int lastScrollWheel;
+    
+    private const float tileWidth = 32;
+    private const float tileWidthHalf = tileWidth / 2;
+    private int worldTileWidth, worldTileHeight;
+
+    enum TileType
+    {
+        None,
+        Wall
+    }
+
+    private TileType[] tiles;
+
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -64,10 +94,11 @@ public class MainGame : Game
         Console.WriteLine("initialize called");
         base.Initialize();
         SoundEffect.MasterVolume = .0f;
-    }
 
-    VertexPositionColor[] _vertexPositionColors;
-    BasicEffect _basicEffect;
+        worldTileWidth = (int)(ScreenWidth / tileWidth);
+        worldTileHeight = (int)(ScreenHeight / tileWidth);
+        tiles = new TileType[worldTileWidth * worldTileHeight];
+    }
 
     protected override void LoadContent()
     {
@@ -159,25 +190,6 @@ public class MainGame : Game
             0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, 0, 0, 1);
     }
 
-    Random random = new Random();
-
-    private float xoff = 0, yoff = 0;
-    private float xscale = 1, yscale = 1;
-
-    private float targetScale = 1;
-    private float maxtargetscale = 8f;
-    private float mintargetscale = 0.5f;
-
-    private float xscreencenter, yscreencenter;
-    Vector2 lastMousePosition;
-    Vector2 mouseWorldPosTile;
-    Vector2 mouseScreenPosTile;
-    private int lastScrollWheel;
-    private const float tileWidth = 32;
-    private const float tileWidthHalf = tileWidth / 2;
-
-    private List<Vector2> tiles = new();
-
     protected override void Update(GameTime gameTime)
     {
         InputManager.BeginFrame();
@@ -254,22 +266,28 @@ public class MainGame : Game
 
         lastMousePosition = mousestate.Position.ToVector2();
         var mousewpos = World.ScreenToWorld(lastMousePosition);
-        mouseWorldPosTile.X = (int)Math.Floor(mousewpos.X / tileWidth) * tileWidth;
-        mouseWorldPosTile.Y = (int)Math.Floor(mousewpos.Y / tileWidth) * tileWidth;
-        mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile + new Vector2(tileWidthHalf, tileWidthHalf));
+        WorldToTile(mousewpos, (int)tileWidth, out int x, out int y);
+        mouseWorldPosTile.X = x;
+        mouseWorldPosTile.Y = y;
+        mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile * new Vector2(tileWidth, tileWidth));
         lastScrollWheel = mousestate.ScrollWheelValue;
 
-        if (InputManager.IsPressed(Keys.T))
+        if (InputManager.IsDown(Keys.T))
         {
-            if (!tiles.Contains(mouseWorldPosTile))
-                tiles.Add(mouseWorldPosTile);
-        }
-        if (InputManager.IsPressed(Keys.R))
-        {
-            if (tiles.Contains(mouseWorldPosTile))
+            if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
             {
-                var tile = tiles.Find(tile => tile == mouseWorldPosTile);
-                tiles.Remove(tile);
+                var tileindex = y * worldTileWidth + x;
+                if (tiles[tileindex] == TileType.None)
+                    tiles[tileindex] = TileType.Wall;
+            }
+        }
+        if (InputManager.IsDown(Keys.R))
+        {
+            if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
+            {
+                var tileindex = y * worldTileWidth + x;
+                if (tiles[tileindex] != TileType.None)
+                    tiles[tileindex] = TileType.None;
             }
         }
 
@@ -303,9 +321,6 @@ public class MainGame : Game
             }
         }
 
-        // reset mouse
-        //PrevLMBState = mousestate.LeftButton;
-        //PrevRMBState = mousestate.RightButton;
         InputManager.EndFrame();
         base.Update(gameTime);
     }
@@ -315,16 +330,20 @@ public class MainGame : Game
         //Console.WriteLine("draw \t {0}", gameTime.TotalGameTime);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        //EffectTechnique effectTechnique = _basicEffect.Techniques[0];
-        //EffectPassCollection effectPassCollection = effectTechnique.Passes;
-        //foreach (EffectPass pass in effectPassCollection)
-        //{
-        //    pass.Apply();
-        //    GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, _vertexPositionColors, 0, 3);
-        //}
-
         // TODO: Add your drawing code here
         _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
+
+        for (int y = 0; y < worldTileHeight; y++)
+        {
+            for (int x = 0;  x < worldTileWidth; x++)
+            {
+                var tileindex = (y * worldTileWidth) + x;
+                var tile = tiles[tileindex];
+                if (tile == TileType.Wall)
+                    _spriteBatch.DrawRect(World.WorldToScreen(x * tileWidth, y * tileWidth), (int)(32 * xscale), (int)(32 * yscale), Color.Red * 0.5f);
+                else continue;
+            }
+        }
 
         character.Draw(_spriteBatch);
 
@@ -343,23 +362,19 @@ public class MainGame : Game
             particle.Draw(_spriteBatch);
         }
 
-        foreach (var tile in tiles)
-        {
-            _spriteBatch.DrawRect(World.WorldToScreen(tile), (int)(32 * xscale), (int)(32 * yscale), Color.Red * 0.5f);
-        }
 
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
-        _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)mouseScreenPosTile.X, (int)mouseScreenPosTile.Y, Color.White);
-        _spriteBatch.DrawRectWireframe(World.WorldToScreen(mouseWorldPosTile), (int)(32 * xscale), (int)(32 * yscale), Color.White);
-        _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), 200, 200, Color.White);
+        _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)(mouseScreenPosTile.X + tileWidthHalf * xscale), (int)(mouseScreenPosTile.Y + tileWidthHalf * xscale), Color.White);
+        _spriteBatch.DrawRectWireframe(mouseScreenPosTile, (int)(32 * xscale), (int)(32 * yscale), Color.White);
+        _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), (int)(ScreenWidth * xscale), (int)(ScreenHeight * yscale), Color.White);
         _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
 
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedX: {character.WorldPosition.X}", new Vector2(10, 50), Color.Black);
-        _spriteBatch.DrawString(Font, $"SpeedY: {character.WorldPosition.Y}", new Vector2(10, 70), Color.Black);
+        _spriteBatch.DrawString(Font, $"Player wpx: {character.WorldPosition.X}", new Vector2(10, 50), Color.Black);
+        _spriteBatch.DrawString(Font, $"Player wpy: {character.WorldPosition.Y}", new Vector2(10, 70), Color.Black);
         //_spriteBatch.DrawString(Font, $"Speed magnitude: {character.speedMagnitude}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
@@ -369,5 +384,11 @@ public class MainGame : Game
 
         _spriteBatch.End();
         base.Draw(gameTime);
+    }
+
+    public static void WorldToTile(Vector2 worldpos, int tilewidth, out int col, out int row)
+    {
+        col = (int)Math.Floor(worldpos.X / tilewidth);
+        row = (int)Math.Floor(worldpos.Y / tilewidth);
     }
 }

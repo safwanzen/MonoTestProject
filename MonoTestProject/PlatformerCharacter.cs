@@ -32,6 +32,8 @@ public class PlatformerCharacter : Entity
 
     private float jumpVelocity = 50f;
 
+    private int tilex, tiley;
+
     #region controls
     private const Keys dpadUp = Keys.W;
     private const Keys dpadDown = Keys.S;
@@ -41,7 +43,6 @@ public class PlatformerCharacter : Entity
     private const Keys BBtn = Keys.O;
     private const Keys LBtn = Keys.P;
     private const Keys RBtn = Keys.OemQuotes;
-
     #endregion
 
     public PlatformerCharacter() 
@@ -123,18 +124,33 @@ public class PlatformerCharacter : Entity
         running = Math.Abs(speed.X) > 0 && isOnGround;
         sprite = running ? runningSprite : standingSprite;
 
+        MainGame.WorldToTile(WorldPosition, 32, out tilex, out tiley);
+
         sprite.Update(deltaTime);
         //animationPlayer.Update(deltaTime);
         weapon.Update(deltaTime);
         base.Update(deltaTime);
     }
 
+    private Color debugColor = Color.Cyan * .5f;
+
     public override void Draw(SpriteBatch spriteBatch)
     {
-        //spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Red * .5f);
         //spriteBatch.DrawRectWireframe((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Cyan);
 
         sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
+        spriteBatch.DrawRect(World.WorldToScreen(new Vector2(tilex * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex - 1) * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex + 1) * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2(tilex * 32, (tiley - 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2(tilex * 32, (tiley + 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex - 1) * 32, (tiley - 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex - 1) * 32, (tiley + 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex + 1) * 32, (tiley - 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        spriteBatch.DrawRectWireframe(World.WorldToScreen(new Vector2((tilex + 1) * 32, (tiley + 1) * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+
         base.Draw(spriteBatch);
     }
 
@@ -146,19 +162,18 @@ public class PlatformerCharacter : Entity
             WorldPosition.X = MainGame.ScreenWidth - size.X / 2;
             speed.X = 0;
         }
-        else if (WorldPosition.X < size.X / 2)
+        if (WorldPosition.X < size.X / 2)
         {
             WorldPosition.X = size.X / 2;
             speed.X = 0;
         }
-
         if (WorldPosition.Y > MainGame.ScreenHeight - size.Y / 2)
         {
             WorldPosition.Y = MainGame.ScreenHeight - size.Y / 2;
             speed.Y = 0;
             isOnGround = true;
         }
-        else if (WorldPosition.Y < size.Y / 2)
+        if (WorldPosition.Y < size.Y / 2)
         {
             WorldPosition.Y = size.Y / 2;
             speed.Y = 0;
