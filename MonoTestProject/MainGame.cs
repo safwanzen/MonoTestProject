@@ -4,8 +4,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace MonoTestProject;
 
@@ -172,7 +170,13 @@ public class MainGame : Game
 
     private float xscreencenter, yscreencenter;
     Vector2 lastMousePosition;
+    Vector2 mouseWorldPosTile;
+    Vector2 mouseScreenPosTile;
     private int lastScrollWheel;
+    private const float tileWidth = 32;
+    private const float tileWidthHalf = tileWidth / 2;
+
+    private List<Vector2> tiles = new();
 
     protected override void Update(GameTime gameTime)
     {
@@ -249,7 +253,25 @@ public class MainGame : Game
         World.SetOffset(xoff, yoff);
 
         lastMousePosition = mousestate.Position.ToVector2();
+        var mousewpos = World.ScreenToWorld(lastMousePosition);
+        mouseWorldPosTile.X = (int)Math.Floor(mousewpos.X / tileWidth) * tileWidth;
+        mouseWorldPosTile.Y = (int)Math.Floor(mousewpos.Y / tileWidth) * tileWidth;
+        mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile + new Vector2(tileWidthHalf, tileWidthHalf));
         lastScrollWheel = mousestate.ScrollWheelValue;
+
+        if (InputManager.IsPressed(Keys.T))
+        {
+            if (!tiles.Contains(mouseWorldPosTile))
+                tiles.Add(mouseWorldPosTile);
+        }
+        if (InputManager.IsPressed(Keys.R))
+        {
+            if (tiles.Contains(mouseWorldPosTile))
+            {
+                var tile = tiles.Find(tile => tile == mouseWorldPosTile);
+                tiles.Remove(tile);
+            }
+        }
 
         character.Update(deltaTime);
 
@@ -321,11 +343,17 @@ public class MainGame : Game
             particle.Draw(_spriteBatch);
         }
 
+        foreach (var tile in tiles)
+        {
+            _spriteBatch.DrawRect(World.WorldToScreen(tile), (int)(32 * xscale), (int)(32 * yscale), Color.Red * 0.5f);
+        }
+
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
-        _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)lastMousePosition.X, (int)lastMousePosition.Y, Color.White);
-
+        _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)mouseScreenPosTile.X, (int)mouseScreenPosTile.Y, Color.White);
+        _spriteBatch.DrawRectWireframe(World.WorldToScreen(mouseWorldPosTile), (int)(32 * xscale), (int)(32 * yscale), Color.White);
+        _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), 200, 200, Color.White);
         _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
 
         _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
@@ -336,7 +364,8 @@ public class MainGame : Game
         //_spriteBatch.DrawString(Font, $"Direction: {character.direction}", new Vector2(10, 110), Color.Black);
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
-        _spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
+        //_spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
+        _spriteBatch.DrawString(Font, $"mouse world pos: {mouseWorldPosTile.X} {mouseWorldPosTile.Y}", new Vector2(10, 130), Color.Black);
 
         _spriteBatch.End();
         base.Draw(gameTime);

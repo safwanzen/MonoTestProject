@@ -1,10 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MonoTestProject;
 
@@ -23,11 +19,17 @@ public static class SpriteBatchShapeExtension
         return _whitePixelTexture;
     }
 
+    public static void DrawRect(this SpriteBatch spriteBatch, Vector2 pos, int width, int height, Color color)
+        => DrawRect(spriteBatch, (int)pos.X, (int)pos.Y, width, height, color);
+
     public static void DrawRect(this SpriteBatch spriteBatch, int x, int y, int width, int height, Color color)
     {
         var pixel = GetTexture(spriteBatch);
         spriteBatch.Draw(pixel, new Rectangle(x, y, width, height), color);
     }
+
+    public static void DrawRectWireframe(this SpriteBatch spriteBatch, Vector2 pos, int width, int height, Color color, int linethickness = 1)
+        => DrawRectWireframe(spriteBatch, (int)pos.X, (int)pos.Y, width, height, color, linethickness);
 
     public static void DrawRectWireframe(this SpriteBatch spriteBatch, int x, int y, int width, int height, Color color, int linethickness = 1)
     {

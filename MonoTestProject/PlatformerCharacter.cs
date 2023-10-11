@@ -13,6 +13,8 @@ public class PlatformerCharacter : Entity
 {
     public AnimatedSprite runningSprite;
     public Sprite standingSprite;
+    private AnimationPlayer animationPlayer;
+    private Sprite sprite;
 
     private Vector2 size = new(8, 32);
 
@@ -25,7 +27,7 @@ public class PlatformerCharacter : Entity
     private float shootTimer = 0.05f;
 
     private Weapon weapon = new();
-    private bool isOnGround = true;
+    private bool isOnGround = false;
     private bool isJumping = false;
 
     private float jumpVelocity = 50f;
@@ -43,7 +45,7 @@ public class PlatformerCharacter : Entity
     #endregion
 
     public PlatformerCharacter() 
-    {        
+    {
     }
 
     public override void Update(float deltaTime)
@@ -95,7 +97,7 @@ public class PlatformerCharacter : Entity
         {
             Console.WriteLine("jump released");
             isJumping = false;
-            if (speed.Y < 0) speed.Y *= 0.1f;
+            if (speed.Y < 0) speed.Y *= 0.3f;
         }
         #endregion
 
@@ -119,25 +121,20 @@ public class PlatformerCharacter : Entity
         #endregion
 
         running = Math.Abs(speed.X) > 0 && isOnGround;
-        if (running) runningSprite.Update(deltaTime);
+        sprite = running ? runningSprite : standingSprite;
+
+        sprite.Update(deltaTime);
+        //animationPlayer.Update(deltaTime);
         weapon.Update(deltaTime);
         base.Update(deltaTime);
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        if (running)
-        {
-            runningSprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
-        }
-        else
-        {
-            standingSprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
-        }
-
         //spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Red * .5f);
         //spriteBatch.DrawRectWireframe((int)World.WorldToScreen(WorldPosition.X - 8, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - 14).Y, (int)(World.scaleX * 16), (int)(World.scaleY * 30), Color.Cyan);
 
+        sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
         base.Draw(spriteBatch);
     }
 
