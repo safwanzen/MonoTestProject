@@ -7,6 +7,12 @@ using System.Collections.Generic;
 
 namespace MonoTestProject;
 
+public enum TileType
+{
+    None,
+    Wall
+}
+
 public class MainGame : Game
 {
     public static int ScreenWidth, ScreenHeight = 0;
@@ -69,15 +75,9 @@ public class MainGame : Game
     
     private const float tileWidth = 32;
     private const float tileWidthHalf = tileWidth / 2;
-    private int worldTileWidth, worldTileHeight;
-
-    enum TileType
-    {
-        None,
-        Wall
-    }
-
-    private TileType[] tiles;
+    public static int worldTileWidth, worldTileHeight;
+    
+    public static TileType[] tiles;
 
     public MainGame()
     {
@@ -269,7 +269,7 @@ public class MainGame : Game
         WorldToTile(mousewpos, (int)tileWidth, out int x, out int y);
         mouseWorldPosTile.X = x;
         mouseWorldPosTile.Y = y;
-        mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile * new Vector2(tileWidth, tileWidth));
+        mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile * tileWidth);
         lastScrollWheel = mousestate.ScrollWheelValue;
 
         if (InputManager.IsDown(Keys.T))
