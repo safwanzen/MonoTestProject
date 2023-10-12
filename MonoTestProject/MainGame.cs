@@ -164,7 +164,7 @@ public class MainGame : Game
             runningSprite = new AnimatedSprite(
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
-                new Vector2(sqw / 2, sqw / 2),
+                new Vector2(sqw / 2, 17),
                 3,
                 durations: new float[] { .12f, .05f, .12f, .05f },
                 true,
@@ -172,7 +172,7 @@ public class MainGame : Game
             standingSprite = new Sprite(
                 CaveStoryCharSheet,
                 new Rectangle(0 * sqw, 1 * sqw, sqw, sqw),
-                new Vector2(sqw / 2, sqw / 2)
+                new Vector2(sqw / 2, 17)
                 ),
         };
 
