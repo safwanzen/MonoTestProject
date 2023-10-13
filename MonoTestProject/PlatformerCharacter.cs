@@ -172,7 +172,7 @@ public class PlatformerCharacter : Entity
         PlayerRect = new Rectangle((int)WorldPosition.X - 8, (int)WorldPosition.Y - 14, sizex * 2, sizey * 2);
 
         isOnGround = false;
-
+        
         if (speed.X <= 0)
         {
             if (GetTile(newWorldPosition.X - sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
@@ -220,6 +220,16 @@ public class PlatformerCharacter : Entity
                 speed.Y = 0;
                 isOnGround = true;
             }
+        }
+
+        // if player is completely inside a wall, push to top
+        if (   GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
+            && GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall
+            && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
+            && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall)
+        {
+            Console.WriteLine("player inside wall");
+            newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 - sizey;
         }
     }
 
