@@ -96,17 +96,17 @@ public class PlatformerCharacter : Entity
             weapon.Charge(true);
         }
 
-        if (InputManager.IsPressed(ABtn) && isOnGround && !isJumping)
+        if (InputManager.IsPressed(dpadUp) && isOnGround && !isJumping)
         {
-            Console.WriteLine("jumping");
+            //Console.WriteLine("jumping");
             isOnGround = false;
             isJumping = true;
             speed.Y = -500f; // -jumpVelocity
         }
 
-        if (InputManager.IsReleased(ABtn) && isJumping)
+        if (InputManager.IsReleased(dpadUp) && isJumping)
         {
-            Console.WriteLine("jump released");
+            //Console.WriteLine("jump released");
             isJumping = false;
             if (speed.Y < 0) speed.Y *= 0.3f;
         }
@@ -178,7 +178,7 @@ public class PlatformerCharacter : Entity
             if (GetTile(newWorldPosition.X - sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
                 || GetTile(newWorldPosition.X - sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
             {
-                Console.WriteLine("hit left");
+                //Console.WriteLine("hit left");
                 newWorldPosition.X = (int)(newWorldPosition.X / 32) * 32 + sizex;
             }
         }
@@ -187,7 +187,7 @@ public class PlatformerCharacter : Entity
             if (GetTile(newWorldPosition.X + sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
                 || GetTile(newWorldPosition.X + sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
             {
-                Console.WriteLine("hit right");
+                //Console.WriteLine("hit right");
                 newWorldPosition.X = (int)(newWorldPosition.X / 32 + 1) * 32 - sizex;
             }
         }
@@ -197,7 +197,7 @@ public class PlatformerCharacter : Entity
             if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y - sizey) == TileType.Wall
                 || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y - sizey) == TileType.Wall)
             {
-                Console.WriteLine("hit top");
+                //Console.WriteLine("hit top");
                 newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 + sizey;
                 speed.Y = 0;
             }
@@ -207,7 +207,7 @@ public class PlatformerCharacter : Entity
             if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y + sizey) == TileType.Wall
                 || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y + sizey) == TileType.Wall)
             {
-                Console.WriteLine("hit bottom");
+                //Console.WriteLine("hit bottom");
                 newWorldPosition.Y = (int)(newWorldPosition.Y / 32 + 1) * 32 - sizey;
                 speed.Y = 0;
                 isOnGround = true;

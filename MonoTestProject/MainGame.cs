@@ -78,6 +78,7 @@ public class MainGame : Game
     public static int worldTileWidth, worldTileHeight;
     
     public static TileType[] tiles;
+    private bool focusCharacter = false;
 
     public MainGame()
     {
@@ -203,6 +204,11 @@ public class MainGame : Game
 
         //xoff = World.ScreenToWorld(character.ScreenPosition.X - ScreenWidth / 2, 0).X;
 
+        if (InputManager.IsPressed(Keys.Q))
+        {
+            focusCharacter = !focusCharacter;
+        }
+
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
         if (InputManager.IsPressed(MouseButtons.RightButton))
         {
@@ -214,7 +220,9 @@ public class MainGame : Game
 
         var currmouseposition = mousestate.Position.ToVector2();
 
-        if (InputManager.IsDown(MouseButtons.LeftButton)
+        // drag to change world offset
+        if (!focusCharacter
+            && InputManager.IsDown(MouseButtons.LeftButton)
             && currmouseposition.X < ScreenWidth && currmouseposition.Y < ScreenHeight
             && currmouseposition.X > 0 && currmouseposition.Y > 0)
         {
@@ -257,13 +265,7 @@ public class MainGame : Game
                 xscale = yscale = targetScale;
             }
         }
-
-        var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
-        var mousediff = newmouseworldcoord - oldmouseworldcoord;
-        xoff += mousediff.X;
-        yoff += mousediff.Y;
-        World.SetOffset(xoff, yoff);
-
+        
         lastMousePosition = mousestate.Position.ToVector2();
         var mousewpos = World.ScreenToWorld(lastMousePosition);
         WorldToTile(mousewpos, (int)tileWidth, out int x, out int y);
@@ -289,6 +291,29 @@ public class MainGame : Game
                 if (tiles[tileindex] != TileType.None)
                     tiles[tileindex] = TileType.None;
             }
+        }
+
+        if (!focusCharacter)
+        {
+            // drag to change world offset, also makes zooming centered to cursor
+            var newmouseworldcoord = World.ScreenToWorld(currmouseposition);
+            var mousediff = newmouseworldcoord - oldmouseworldcoord;
+            xoff += mousediff.X;
+            yoff += mousediff.Y;
+            World.SetOffset(xoff, yoff);
+        }
+        else
+        {
+            // make camera follow character but add limit
+            var wsw = ScreenWidth / xscale;
+            var wsh = ScreenHeight / yscale;
+            xoff = -character.WorldPosition.X + wsw / 2;
+            yoff = -character.WorldPosition.Y + wsh / 2;
+            if (xoff > 0) xoff = 0;
+            else if (xoff < wsw - ScreenWidth) xoff = wsw - ScreenWidth;
+            if (yoff < wsh - ScreenHeight) yoff = wsh - ScreenHeight;
+            else if (yoff > 0) yoff = 0;
+            World.SetOffset((int)xoff, (int)yoff);
         }
 
         character.Update(deltaTime);
@@ -371,7 +396,8 @@ public class MainGame : Game
         _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), (int)(ScreenWidth * xscale), (int)(ScreenHeight * yscale), Color.White);
         _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
 
-        _spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
+        //_spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
+        _spriteBatch.DrawString(Font, string.Format("Camera mode: {0}", focusCharacter ? "Character" : "Click and drag"), new Vector2(10, 10), Color.Black);
         _spriteBatch.DrawString(Font, $"Enemies: {Enemies.Count}", new Vector2(10, 30), Color.Black);
         _spriteBatch.DrawString(Font, $"Player wpx: {character.WorldPosition.X}", new Vector2(10, 50), Color.Black);
         _spriteBatch.DrawString(Font, $"Player wpy: {character.WorldPosition.Y}", new Vector2(10, 70), Color.Black);
