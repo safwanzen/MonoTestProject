@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoTestProject.UI;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +23,9 @@ public class MainGame : Game
     Vector2 ballPosition;
     Vector2 ballSpeed;
     float ballRotation;
+
+    UIContainer UIContainer = new();
+    Button testButton;
 
     public static Texture2D handTexture;
     public static Texture2D particleTexture;
@@ -92,18 +96,42 @@ public class MainGame : Game
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
-        Console.WriteLine("initialize called");
+        //Console.WriteLine("initialize called");
+        Console.WriteLine("Welcome");
+        Console.WriteLine("Controls are: \n" +
+            "- [A], [D] to move left and right \n" +
+            "- [W] to jump \n" +
+            "- [O] to shoot. Hold [O] for one second and release for charged shot" +
+            "- [T] to add block at cursor \n" +
+            "- [R] to remove block at cursor \n" +
+            "- [Right mouse button] to add enemy");
+
         base.Initialize();
         SoundEffect.MasterVolume = .0f;
 
         worldTileWidth = (int)(ScreenWidth / tileWidth);
         worldTileHeight = (int)(ScreenHeight / tileWidth);
         tiles = new TileType[worldTileWidth * worldTileHeight];
+
+        InputManager.SetWindow(Window);
+
+        testButton = new Button()
+        {
+            Text = "Hello Button",
+            Bounds = new Rectangle(0, 50, 50, 20)
+        };
+
+        testButton.Click += (s, e) =>
+        {
+            Console.WriteLine("click event invoked");
+        };
+
+        UIContainer.AddElement(testButton);
     }
 
     protected override void LoadContent()
     {
-        Console.WriteLine("loadcontent called");
+        //Console.WriteLine("loadcontent called");
 
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
         _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -313,7 +341,7 @@ public class MainGame : Game
             else if (xoff < wsw - ScreenWidth) xoff = wsw - ScreenWidth;
             if (yoff < wsh - ScreenHeight) yoff = wsh - ScreenHeight;
             else if (yoff > 0) yoff = 0;
-            World.SetOffset((int)xoff, (int)yoff);
+            World.SetOffset(xoff, yoff);
         }
 
         character.Update(deltaTime);
@@ -345,6 +373,8 @@ public class MainGame : Game
                 i++;
             }
         }
+
+        UIContainer.Update(gameTime);
 
         InputManager.EndFrame();
         base.Update(gameTime);
@@ -407,6 +437,8 @@ public class MainGame : Game
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
         //_spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
         _spriteBatch.DrawString(Font, $"mouse world pos: {mouseWorldPosTile.X} {mouseWorldPosTile.Y}", new Vector2(10, 130), Color.Black);
+
+        UIContainer.Draw(_spriteBatch);
 
         _spriteBatch.End();
         base.Draw(gameTime);

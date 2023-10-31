@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,8 @@ public enum MouseButtons
 
 public static class InputManager
 {
+    private static GameWindow Window;
+
     static readonly Dictionary<MouseButtons, ButtonState> PreviousMouseButtonState = new()
     {
         [MouseButtons.LeftButton    ] = ButtonState.Released,
@@ -47,21 +50,21 @@ public static class InputManager
     public static void BeginFrame()
     {
         //pressedKeys = Keyboard.GetState().GetPressedKeys();
-        MouseButtonState[MouseButtons.LeftButton    ] = Mouse.GetState().LeftButton;
-        MouseButtonState[MouseButtons.MiddleButton  ] = Mouse.GetState().MiddleButton;
-        MouseButtonState[MouseButtons.RightButton   ] = Mouse.GetState().RightButton;
-        MouseButtonState[MouseButtons.XButton1      ] = Mouse.GetState().XButton1;
-        MouseButtonState[MouseButtons.XButton2      ] = Mouse.GetState().XButton2;
+        MouseButtonState[MouseButtons.LeftButton    ] = Mouse.GetState(Window).LeftButton;
+        MouseButtonState[MouseButtons.MiddleButton  ] = Mouse.GetState(Window).MiddleButton;
+        MouseButtonState[MouseButtons.RightButton   ] = Mouse.GetState(Window).RightButton;
+        MouseButtonState[MouseButtons.XButton1      ] = Mouse.GetState(Window).XButton1;
+        MouseButtonState[MouseButtons.XButton2      ] = Mouse.GetState(Window).XButton2;
     }
 
     public static void EndFrame()
     {
         pressedKeys = Keyboard.GetState().GetPressedKeys();
-        PreviousMouseButtonState[MouseButtons.LeftButton    ] = Mouse.GetState().LeftButton;
-        PreviousMouseButtonState[MouseButtons.MiddleButton  ] = Mouse.GetState().MiddleButton;
-        PreviousMouseButtonState[MouseButtons.RightButton   ] = Mouse.GetState().RightButton;
-        PreviousMouseButtonState[MouseButtons.XButton1      ] = Mouse.GetState().XButton1;
-        PreviousMouseButtonState[MouseButtons.XButton2      ] = Mouse.GetState().XButton2;
+        PreviousMouseButtonState[MouseButtons.LeftButton    ] = Mouse.GetState(Window).LeftButton;
+        PreviousMouseButtonState[MouseButtons.MiddleButton  ] = Mouse.GetState(Window).MiddleButton;
+        PreviousMouseButtonState[MouseButtons.RightButton   ] = Mouse.GetState(Window).RightButton;
+        PreviousMouseButtonState[MouseButtons.XButton1      ] = Mouse.GetState(Window).XButton1;
+        PreviousMouseButtonState[MouseButtons.XButton2      ] = Mouse.GetState(Window).XButton2;
     }
 
     public static bool IsPressed(Keys key)
@@ -98,5 +101,12 @@ public static class InputManager
     public static bool IsUp(MouseButtons button)
     {
         return MouseButtonState[button] == ButtonState.Released;
+    }
+
+    public static Vector2 MousePosition => Mouse.GetState(Window).Position.ToVector2();
+
+    public static void SetWindow(GameWindow window)
+    {
+        Window ??= window;
     }
 }

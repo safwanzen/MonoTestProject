@@ -19,6 +19,10 @@ public static class SpriteBatchShapeExtension
         return _whitePixelTexture;
     }
 
+    public static void DrawRect(this SpriteBatch spriteBatch, Rectangle rect, Color color)
+        => DrawRect(spriteBatch, rect.X, rect.Y, rect.Width, rect.Height, color);
+
+
     public static void DrawRect(this SpriteBatch spriteBatch, Vector2 pos, int width, int height, Color color)
         => DrawRect(spriteBatch, (int)pos.X, (int)pos.Y, width, height, color);
 
