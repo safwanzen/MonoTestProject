@@ -150,7 +150,7 @@ public class PlatformerCharacter : Entity
     public override void Draw(SpriteBatch spriteBatch)
     {
         sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
-        spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - sizex, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - sizey).Y, (int)(World.scaleX * sizex * 2), (int)(World.scaleY * sizey * 2), debugColor);
+        //spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - sizex, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - sizey).Y, (int)(World.scaleX * sizex * 2), (int)(World.scaleY * sizey * 2), debugColor);
         //spriteBatch.DrawRect(World.WorldToScreen(new Vector2(tilex * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
 
         //spriteBatch.DrawRect(World.WorldToScreen(new Vector2(PlayerRect.X, PlayerRect.Y)), (int)(sizex * World.scaleX * 2), (int)(sizey * World.scaleY * 2), debugColor);

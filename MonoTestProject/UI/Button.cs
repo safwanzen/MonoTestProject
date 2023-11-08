@@ -26,7 +26,10 @@ public class Button : IUIElement
 
     public event EventHandler DoubleClick;
     public event EventHandler Click;
-    public event EventHandler Release;
+    public event EventHandler Released;
+    public event EventHandler Pressed;
+    public event EventHandler PointerEnter;
+    public event EventHandler PointerLeave;
 
     public void Draw(SpriteBatch spriteBatch)
     {
@@ -43,12 +46,14 @@ public class Button : IUIElement
         {
             // pointer enter
             //Console.WriteLine("pointer entered");
+            OnPointerEnter();
         }
 
         if (isHovering && !hit)
         {
             // pointer leave
             //Console.WriteLine("pointer left");
+            OnPointerLeave();
         }
 
         if (hit && InputManager.IsPressed(MouseButtons.LeftButton))
@@ -69,7 +74,7 @@ public class Button : IUIElement
             {
                 doubleClickTimeWindow = 200; //clickTimeWindow;
                 //Console.WriteLine("first click");
-                Click?.Invoke(this, new EventArgs());
+                OnClick();
             }
         }
 
@@ -77,7 +82,7 @@ public class Button : IUIElement
         {
             // invoke click release event
             //Console.WriteLine("pointer release");
-            Release?.Invoke(this, new EventArgs());
+            OnPointerReleased();
         }
 
         if (buttonDebounceTime > 0) buttonDebounceTime -= (float)elapsedTime;
@@ -88,6 +93,31 @@ public class Button : IUIElement
         }
 
         isHovering = hit;
+    }
+
+    protected void OnPointerEnter()
+    {
+        PointerEnter?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected void OnPointerLeave()
+    {
+        PointerLeave?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected void OnClick()
+    {
+        Click?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected void OnPointerPressed()
+    {
+        Pressed?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected void OnPointerReleased()
+    {
+        Released?.Invoke(this, EventArgs.Empty);
     }
 
     private bool HitCheckPoint()
