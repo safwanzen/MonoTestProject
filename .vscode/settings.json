@@ -1,0 +1,6 @@
+{
+    "dotnet.codeLens.enableReferencesCodeLens": false,
+    "workbench.colorTheme": "Kimbie Dark",
+    "workbench.preferredDarkColorTheme": "Default Dark Modern",
+    "workbench.iconTheme": "vs-seti"
+}

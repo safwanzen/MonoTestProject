@@ -8,12 +8,6 @@ using System.Collections.Generic;
 
 namespace MonoTestProject;
 
-public enum TileType
-{
-    None,
-    Wall
-}
-
 public class MainGame : Game
 {
     public static int ScreenWidth, ScreenHeight = 0;
@@ -302,15 +296,37 @@ public class MainGame : Game
         mouseScreenPosTile = World.WorldToScreen(mouseWorldPosTile * tileWidth);
         lastScrollWheel = mousestate.ScrollWheelValue;
 
+        // add wall tile
         if (InputManager.IsDown(Keys.T))
         {
             if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
             {
                 var tileindex = y * worldTileWidth + x;
-                if (tiles[tileindex] == TileType.None)
-                    tiles[tileindex] = TileType.Wall;
+                //if (tiles[tileindex] == TileType.None)
+                tiles[tileindex] = TileType.Wall;
             }
         }
+        // add left slope tile
+        if (InputManager.IsDown(Keys.F))
+        {
+            if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
+            {
+                var tileindex = y * worldTileWidth + x;
+                //if (tiles[tileindex] == TileType.None)
+                tiles[tileindex] = TileType.SlopeL;
+            }
+        }
+        // add right slope tile
+        if (InputManager.IsDown(Keys.G))
+        {
+            if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
+            {
+                var tileindex = y * worldTileWidth + x;
+                //if (tiles[tileindex] == TileType.None)
+                tiles[tileindex] = TileType.SlopeR;
+            }
+        }
+        // remove tile
         if (InputManager.IsDown(Keys.R))
         {
             if (x >= 0 && x < worldTileWidth && y >= 0 && y < worldTileHeight)
@@ -380,8 +396,10 @@ public class MainGame : Game
         base.Update(gameTime);
     }
 
+
     protected override void Draw(GameTime gameTime)
     {
+        Vector2[] triangle = { new(60, 60), new(60, 120), new(0, 60) };
         //Console.WriteLine("draw \t {0}", gameTime.TotalGameTime);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
@@ -396,6 +414,16 @@ public class MainGame : Game
                 var tile = tiles[tileindex];
                 if (tile == TileType.Wall)
                     _spriteBatch.DrawRect(World.WorldToScreen(x * tileWidth, y * tileWidth), (int)(32 * xscale), (int)(32 * yscale), Color.Red * 0.5f);
+                if (tile == TileType.SlopeR)
+                    _spriteBatch.DrawPolygonWireFrame(World.WorldToScreen(x * tileWidth, y * tileWidth),
+                        new Vector2[] { new(tileWidth, 0), new(tileWidth, tileWidth), new(0, tileWidth) },
+                        Color.Red * 0.5f,
+                        xscale, yscale);
+                if (tile == TileType.SlopeL)
+                    _spriteBatch.DrawPolygonWireFrame(World.WorldToScreen(x * tileWidth, y * tileWidth),
+                        new Vector2[] { new(0, 0), new(tileWidth, tileWidth), new(0, tileWidth) },
+                        Color.Red * 0.5f,
+                        xscale, yscale);
                 else continue;
             }
         }
@@ -421,9 +449,12 @@ public class MainGame : Game
         //_spriteBatch.Draw(ballTexture, ballPosition, null, Color.White, ballRotation + MathHelper.PiOver2,
         //    new Vector2(16, 22), Vector2.One, SpriteEffects.None, 0f);
 
+        // draw triangle
+        _spriteBatch.DrawPolygonWireFrame(mouseScreenPosTile, triangle, Color.White, xscale, yscale);
+
         _spriteBatch.DrawLine((int)character.ScreenPosition.X, (int)character.ScreenPosition.Y, (int)(mouseScreenPosTile.X + tileWidthHalf * xscale), (int)(mouseScreenPosTile.Y + tileWidthHalf * xscale), Color.White);
-        _spriteBatch.DrawRectWireframe(mouseScreenPosTile, (int)(32 * xscale), (int)(32 * yscale), Color.White);
-        _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), (int)(ScreenWidth * xscale), (int)(ScreenHeight * yscale), Color.White);
+        _spriteBatch.DrawRectWireframe(mouseScreenPosTile, 32, 32, Color.White, xscale, yscale);
+        _spriteBatch.DrawRectWireframe(World.WorldToScreen(0, 0), ScreenWidth, ScreenHeight, Color.White, xscale, yscale);
         _spriteBatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
 
         //_spriteBatch.DrawString(Font, $"Bullets: {Bullets.Count}", new Vector2(10, 10), Color.Black);
