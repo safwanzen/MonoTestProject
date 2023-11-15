@@ -29,7 +29,7 @@ public class PlatformerCharacter : Entity
     private float shootTimer = 0.05f;
 
     private Weapon weapon = new();
-    private bool isOnGround = false;
+    public bool IsOnGround = false;
     private bool isJumping = false;
 
     private float jumpVelocity = 50f;
@@ -96,10 +96,10 @@ public class PlatformerCharacter : Entity
             weapon.Charge(true);
         }
 
-        if (InputManager.IsPressed(dpadUp) && isOnGround && !isJumping)
+        if (InputManager.IsPressed(dpadUp) && IsOnGround && !isJumping)
         {
             //Console.WriteLine("jumping");
-            isOnGround = false;
+            IsOnGround = false;
             isJumping = true;
             speed.Y = -500f; // -jumpVelocity
         }
@@ -116,7 +116,7 @@ public class PlatformerCharacter : Entity
 
         speed.Y += 1500f * deltaTime;
 
-        if (isOnGround)
+        if (IsOnGround)
         {
             isJumping = false;
             //speed.Y = 0;
@@ -131,7 +131,7 @@ public class PlatformerCharacter : Entity
 
         CheckMapCollision();
 
-        running = Math.Abs(speed.X) > 0 && isOnGround;
+        running = Math.Abs(speed.X) > 0 && IsOnGround;
         sprite = running ? runningSprite : standingSprite;
 
         WorldPosition = newWorldPosition;
@@ -171,8 +171,34 @@ public class PlatformerCharacter : Entity
     {
         PlayerRect = new Rectangle((int)WorldPosition.X - 8, (int)WorldPosition.Y - 14, sizex * 2, sizey * 2);
 
-        isOnGround = false;
-        
+        IsOnGround = false;
+        OnSlope = false;
+
+        // above slope
+        if (GetTile(WorldPosition.X, newWorldPosition.Y + sizey * .9f) == TileType.SlopeR)
+        {
+            // height at x position
+            int slopeY = (int)newWorldPosition.X % 32;
+            //Console.WriteLine("{0} {1}", (WorldPosition.Y + sizey * .9f) % 32, 32 - slopeY);
+            if ((newWorldPosition.Y + sizey * .9f) % 32 > 32 - slopeY)
+            {
+                speed.Y = 0;
+                Console.WriteLine("on slope R x {0} y {1} slopeY {2}", WorldPosition.X % 32, (int)(WorldPosition.Y + sizey * .9f) % 32, slopeY);
+                newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 - slopeY + sizey;
+                IsOnGround = true;
+                OnSlope = true;
+            }
+        }
+        //else if (GetTile(newWorldPosition.X, WorldPosition.Y - sizey * .9f) == TileType.SlopeL
+        //    || GetTile(newWorldPosition.X, WorldPosition.Y + sizey * .9f) == TileType.SlopeL)
+        //{
+        //    Console.WriteLine("on slope R x {0} y {1}", WorldPosition.X % 32, WorldPosition.Y % 32);
+        //    Console.WriteLine("on slope L");
+        //    OnSlope = true;
+        //    isOnGround = true;
+        //}
+
+        // moving left
         if (speed.X <= 0)
         {
             if (GetTile(newWorldPosition.X - sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
@@ -182,16 +208,19 @@ public class PlatformerCharacter : Entity
                 newWorldPosition.X = (int)(newWorldPosition.X / 32) * 32 + sizex;
             }
         }
+        // moving right
         else
-        {
-            if (GetTile(newWorldPosition.X + sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
+        {            
+            if ((GetTile(newWorldPosition.X + sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
                 || GetTile(newWorldPosition.X + sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
+                && !OnSlope)
             {
                 //Console.WriteLine("hit right");
                 newWorldPosition.X = (int)(newWorldPosition.X / 32 + 1) * 32 - sizex;
             }
         }
         
+        // moving up
         if (speed.Y <= 0)
         {
             if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y - sizey) == TileType.Wall
@@ -202,23 +231,25 @@ public class PlatformerCharacter : Entity
                 speed.Y = 0;
             }
         }
+        // moving down
         else
         {
-            if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y + sizey) == TileType.Wall
+            if ((GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y + sizey) == TileType.Wall
                 || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y + sizey) == TileType.Wall)
+                && !OnSlope)
             {
                 //Console.WriteLine("hit bottom");
                 newWorldPosition.Y = (int)(newWorldPosition.Y / 32 + 1) * 32 - sizey;
                 speed.Y = 0;
-                isOnGround = true;
+                IsOnGround = true;
             }
 
             // map lower bound
-            if (newWorldPosition.Y + sizey > MainGame.ScreenHeight)
+            if ((newWorldPosition.Y + sizey > MainGame.ScreenHeight) && !OnSlope)
             {
                 newWorldPosition.Y = MainGame.ScreenHeight - sizey;
                 speed.Y = 0;
-                isOnGround = true;
+                IsOnGround = true;
             }
         }
 

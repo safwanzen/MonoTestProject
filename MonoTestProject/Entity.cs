@@ -13,6 +13,8 @@ public class Entity
     public float scaleY;
     public Vector2 ScreenPosition { protected set; get; }
 
+    public bool OnSlope = false;
+
     public Entity()
     {
         World = MainGame.World;
