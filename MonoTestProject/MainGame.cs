@@ -232,13 +232,13 @@ public class MainGame : Game
         }
 
         //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
-        if (InputManager.IsPressed(MouseButtons.RightButton))
-        {
-            //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
-            var e = new Enemy(World.ScreenToWorld(mousestate.Position.ToVector2()));
-            Console.WriteLine("Enemy added {0}", e.GetHashCode());
-            Enemies.Add(e);
-        }
+        //if (InputManager.IsPressed(MouseButtons.RightButton))
+        //{
+        //    //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
+        //    var e = new Enemy(World.ScreenToWorld(mousestate.Position.ToVector2()));
+        //    Console.WriteLine("Enemy added {0}", e.GetHashCode());
+        //    Enemies.Add(e);
+        //}
 
         var currmouseposition = mousestate.Position.ToVector2();
 

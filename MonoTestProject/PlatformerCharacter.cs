@@ -129,13 +129,13 @@ public class PlatformerCharacter : Entity
 
         #endregion
 
+        MainGame.WorldToTile(newWorldPosition, 32, out tilex, out tiley);
         CheckMapCollision();
 
         running = Math.Abs(speed.X) > 0 && IsOnGround;
         sprite = running ? runningSprite : standingSprite;
 
         WorldPosition = newWorldPosition;
-        MainGame.WorldToTile(WorldPosition, 32, out tilex, out tiley);
 
         sprite.Update(deltaTime);
         //animationPlayer.Update(deltaTime);
@@ -149,9 +149,9 @@ public class PlatformerCharacter : Entity
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
-        //spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - sizex, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - sizey).Y, (int)(World.scaleX * sizex * 2), (int)(World.scaleY * sizey * 2), debugColor);
-        //spriteBatch.DrawRect(World.WorldToScreen(new Vector2(tilex * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
+        //sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
+        spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - sizex, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - sizey).Y, (int)(World.scaleX * sizex * 2), (int)(World.scaleY * sizey * 2), debugColor);
+        spriteBatch.DrawRect(World.WorldToScreen(new Vector2(tilex * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
 
         //spriteBatch.DrawRect(World.WorldToScreen(new Vector2(PlayerRect.X, PlayerRect.Y)), (int)(sizex * World.scaleX * 2), (int)(sizey * World.scaleY * 2), debugColor);
         //spriteBatch.DrawRect(World.WorldToScreen(new Vector2((tilex - 1) * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), collideLeft ? debugColorHit : debugColor); // left
@@ -167,6 +167,9 @@ public class PlatformerCharacter : Entity
         base.Draw(spriteBatch);
     }
 
+    List<(TileType, Vector2)> CollisionTiles = new();
+
+    // tile based collision
     private void CheckMapCollision()
     {
         PlayerRect = new Rectangle((int)WorldPosition.X - 8, (int)WorldPosition.Y - 14, sizex * 2, sizey * 2);
@@ -174,95 +177,136 @@ public class PlatformerCharacter : Entity
         IsOnGround = false;
         OnSlope = false;
 
-        // above slope
-        if (GetTile(WorldPosition.X, newWorldPosition.Y + sizey * .9f) == TileType.SlopeR)
+        // slope
+        // how to handle moving into flat side of slope
+        var tile = GetTile(newWorldPosition.X, newWorldPosition.Y + sizey * 0.9f);
+        if (tile == TileType.SlopeR)
         {
-            // height at x position
-            int slopeY = (int)newWorldPosition.X % 32;
-            //Console.WriteLine("{0} {1}", (WorldPosition.Y + sizey * .9f) % 32, 32 - slopeY);
-            if ((newWorldPosition.Y + sizey * .9f) % 32 > 32 - slopeY)
+            var height = (int)newWorldPosition.X % 32;
+            if (newWorldPosition.Y % 32 + sizey > 32 - height)
             {
-                speed.Y = 0;
-                Console.WriteLine("on slope R x {0} y {1} slopeY {2}", WorldPosition.X % 32, (int)(WorldPosition.Y + sizey * .9f) % 32, slopeY);
-                newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 - slopeY + sizey;
+                newWorldPosition.Y -= newWorldPosition.Y % 32 + sizey - 32 + height;
                 IsOnGround = true;
                 OnSlope = true;
+                speed.Y = 0;
             }
         }
-        //else if (GetTile(newWorldPosition.X, WorldPosition.Y - sizey * .9f) == TileType.SlopeL
-        //    || GetTile(newWorldPosition.X, WorldPosition.Y + sizey * .9f) == TileType.SlopeL)
-        //{
-        //    Console.WriteLine("on slope R x {0} y {1}", WorldPosition.X % 32, WorldPosition.Y % 32);
-        //    Console.WriteLine("on slope L");
-        //    OnSlope = true;
-        //    isOnGround = true;
-        //}
 
-        // moving left
-        if (speed.X <= 0)
+        // wall
+        // disable wall collision when moving on slope if wall is on the same row as slope
+        // if moving right, check tile to the right
+        // if left, check left
+        if (speed.X > 0)
         {
-            if (GetTile(newWorldPosition.X - sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
-                || GetTile(newWorldPosition.X - sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
+            if (GetTile(newWorldPosition.X + sizex, WorldPosition.Y + sizey * 0.9f) == TileType.Wall)
             {
-                //Console.WriteLine("hit left");
-                newWorldPosition.X = (int)(newWorldPosition.X / 32) * 32 + sizex;
-            }
-        }
-        // moving right
-        else
-        {            
-            if ((GetTile(newWorldPosition.X + sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
-                || GetTile(newWorldPosition.X + sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
-                && !OnSlope)
-            {
-                //Console.WriteLine("hit right");
                 newWorldPosition.X = (int)(newWorldPosition.X / 32 + 1) * 32 - sizex;
             }
         }
-        
-        // moving up
-        if (speed.Y <= 0)
-        {
-            if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y - sizey) == TileType.Wall
-                || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y - sizey) == TileType.Wall)
-            {
-                //Console.WriteLine("hit top");
-                newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 + sizey;
-                speed.Y = 0;
-            }
-        }
-        // moving down
-        else
-        {
-            if ((GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y + sizey) == TileType.Wall
-                || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y + sizey) == TileType.Wall)
-                && !OnSlope)
-            {
-                //Console.WriteLine("hit bottom");
-                newWorldPosition.Y = (int)(newWorldPosition.Y / 32 + 1) * 32 - sizey;
-                speed.Y = 0;
-                IsOnGround = true;
-            }
 
-            // map lower bound
-            if ((newWorldPosition.Y + sizey > MainGame.ScreenHeight) && !OnSlope)
-            {
-                newWorldPosition.Y = MainGame.ScreenHeight - sizey;
-                speed.Y = 0;
-                IsOnGround = true;
-            }
-        }
-
-        // if player is completely inside a wall, push to top
-        if (   GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
-            && GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall
-            && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
-            && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall)
+        // map lower bound
+        if ((newWorldPosition.Y + sizey > MainGame.ScreenHeight))
         {
-            Console.WriteLine("player inside wall");
-            newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 - sizey;
+            newWorldPosition.Y = MainGame.ScreenHeight - sizey;
+            speed.Y = 0;
+            IsOnGround = true;
         }
     }
+
+    //    int slopeY = 0;
+
+    //    // above slope
+    //    if (GetTile(WorldPosition.X, newWorldPosition.Y + sizey - 1) == TileType.SlopeR)
+    //    {
+    //        slopeY = (int)WorldPosition.X % 32;
+    //        // height at x position
+    //        //Console.WriteLine("{0} {1}", (WorldPosition.Y + sizey * .9f) % 32, 32 - slopeY);
+    //        if ((newWorldPosition.Y + sizey) % 32 > 32 - slopeY)
+    //        {
+    //            speed.Y = 0;
+    //            IsOnGround = true;
+    //            OnSlope = true;
+
+    //            //Console.WriteLine("on slope R x {0} y {1} slopeY {2}", WorldPosition.X % 32, (int)(WorldPosition.Y + sizey * .9f) % 32, slopeY);
+    //            Console.WriteLine(slopeY);
+    //            newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 + 32 - slopeY + sizey;
+    //        }
+    //    }
+    //    //else if (GetTile(newWorldPosition.X, WorldPosition.Y - sizey * .9f) == TileType.SlopeL
+    //    //    || GetTile(newWorldPosition.X, WorldPosition.Y + sizey * .9f) == TileType.SlopeL)
+    //    //{
+    //    //    Console.WriteLine("on slope R x {0} y {1}", WorldPosition.X % 32, WorldPosition.Y % 32);
+    //    //    Console.WriteLine("on slope L");
+    //    //    OnSlope = true;
+    //    //    isOnGround = true;
+    //    //}
+
+    //    // moving left
+    //    if (speed.X <= 0)
+    //    {
+    //        if ((GetTile(newWorldPosition.X - sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
+    //            || GetTile(newWorldPosition.X - sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
+    //            && !OnSlope)
+    //        {
+    //            //Console.WriteLine("hit left");
+    //            newWorldPosition.X = (int)(newWorldPosition.X / 32) * 32 + sizex;
+    //        }
+    //    }
+    //    // moving right
+    //    else
+    //    {            
+    //        if ((GetTile(newWorldPosition.X + sizex, WorldPosition.Y - sizey * .9f) == TileType.Wall
+    //            || GetTile(newWorldPosition.X + sizex, WorldPosition.Y + sizey * .9f) == TileType.Wall)
+    //            && !OnSlope)
+    //        {
+    //            //Console.WriteLine("hit right");
+    //            newWorldPosition.X = (int)(newWorldPosition.X / 32 + 1) * 32 - sizex;
+    //        }
+    //    }
+
+    //    // moving up
+    //    if (speed.Y <= 0)
+    //    {
+    //        if (GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y - sizey) == TileType.Wall
+    //            || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y - sizey) == TileType.Wall)
+    //        {
+    //            //Console.WriteLine("hit top");
+    //            newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 + sizey;
+    //            speed.Y = 0;
+    //        }
+    //    }
+    //    // moving down
+    //    else
+    //    {
+    //        if ((GetTile(newWorldPosition.X + sizex - 1, newWorldPosition.Y + sizey) == TileType.Wall
+    //            || GetTile(newWorldPosition.X - sizex, newWorldPosition.Y + sizey) == TileType.Wall)
+    //            && !OnSlope)
+    //        {
+    //            //Console.WriteLine("hit bottom");
+    //            newWorldPosition.Y = (int)(newWorldPosition.Y / 32 + 1) * 32 - sizey;
+    //            speed.Y = 0;
+    //            IsOnGround = true;
+    //        }
+
+    //        // map lower bound
+    //        if ((newWorldPosition.Y + sizey > MainGame.ScreenHeight) && !OnSlope)
+    //        {
+    //            newWorldPosition.Y = MainGame.ScreenHeight - sizey;
+    //            speed.Y = 0;
+    //            IsOnGround = true;
+    //        }
+    //    }
+
+    //    // if player is completely inside a wall, push to top
+    //    if (   GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
+    //        && GetTile(newWorldPosition.X - sizex + .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall
+    //        && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y - sizey + .9f) == TileType.Wall
+    //        && GetTile(newWorldPosition.X + sizex - .9f, newWorldPosition.Y + sizey - .9f) == TileType.Wall)
+    //    {
+    //        Console.WriteLine("player inside wall");
+    //        newWorldPosition.Y = (int)(newWorldPosition.Y / 32) * 32 - sizey;
+    //    }
+    //}
 
 
     private TileType GetTile(float x, float y)
