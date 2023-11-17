@@ -467,7 +467,7 @@ public class MainGame : Game
         _spriteBatch.DrawString(Font, $"MouseXY: {lastMousePosition.X} {lastMousePosition.Y}", new Vector2(10, 90), Color.Black);
         //_spriteBatch.DrawString(Font, $"MouseXY: {World.ScreenToWorld)}", new Vector2(10, 110), Color.Black);
         //_spriteBatch.DrawString(Font, $"world offset XY: {xoff} {yoff}", new Vector2(10, 130), Color.Black);
-        _spriteBatch.DrawString(Font, $"mouse world pos: {character.IsOnGround}", new Vector2(10, 130), Color.Black);
+        _spriteBatch.DrawString(Font, $"onground: {character.IsOnGround} ------ onslope: {character.OnSlope}", new Vector2(10, 130), Color.Black);
         //_spriteBatch.DrawString(Font, $"mouse world pos: {mouseWorldPosTile.X} {mouseWorldPosTile.Y}", new Vector2(10, 130), Color.Black);
 
         UIContainer.Draw(_spriteBatch);
