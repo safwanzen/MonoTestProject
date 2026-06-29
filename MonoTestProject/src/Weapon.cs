@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class Weapon : Entity
 {

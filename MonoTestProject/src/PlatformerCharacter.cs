@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class PlatformerCharacter : Entity
 {
@@ -32,8 +32,14 @@ public class PlatformerCharacter : Entity
     public bool IsOnGround = false;
     private bool isJumping = false;
 
-    private float jumpVelocity = 50f;
+    private const float DASHDURATION = 0.5f;
+    private const int RUNSPEED = 180;
+    private const int DASHSPEED = 280;
 
+    private float jumpVelocity = 50f;
+    private int moveSpeed = 180;
+    private float dashDur = 0;
+    
     private int tilex, tiley;
 
     #region controls
@@ -62,43 +68,53 @@ public class PlatformerCharacter : Entity
     public override void Update(float deltaTime)
     {
         #region handle input
-        int spd = 10;
+        
         if (InputManager.IsDown(dpadRight))
         {
             facingRight = true;
             if (OnSlope && GetTile(WorldPosition.X, WorldPosition.Y + sizey * 0.9f) == TileType.SlopeR)
             {
-                speed.X = spd * .5f;
-                speed.Y = -spd * .5f;
+                speed.X = moveSpeed * .5f;
+                speed.Y = -moveSpeed * .5f;
             }
             else if (OnSlope && GetTile(WorldPosition.X, WorldPosition.Y + sizey * 0.9f) == TileType.SlopeL)
             {
-                speed.X = spd * .5f;
-                speed.Y = spd * .5f;
+                speed.X = moveSpeed * .5f;
+                speed.Y = moveSpeed * .5f;
             }
             else
-                speed.X = spd;
+                speed.X = moveSpeed;
         }
         else if (InputManager.IsDown(dpadLeft))
         {
             facingRight = false;
             if (OnSlope && GetTile(WorldPosition.X, WorldPosition.Y + sizey * 0.9f) == TileType.SlopeR)
             {
-                speed.X = -spd * .5f;
-                speed.Y = spd * .5f;
+                speed.X = -moveSpeed * .5f;
+                speed.Y = moveSpeed * .5f;
             }
             else if (OnSlope && GetTile(WorldPosition.X, WorldPosition.Y + sizey * 0.9f) == TileType.SlopeL)
             {
-                speed.X = -spd * .5f;
-                speed.Y = -spd * .5f;
+                speed.X = -moveSpeed * .5f;
+                speed.Y = -moveSpeed * .5f;
             }
             else
-                speed.X = -spd;
+                speed.X = -moveSpeed;
         }
         else
         {
             speed.X = 0;
             runningSprite.ResetAnimation();
+        }
+
+        if (InputManager.IsDown(LBtn))
+        {
+            Dash(deltaTime);
+        }
+        
+        if (InputManager.IsReleased(LBtn))
+        {
+            ResetDash();
         }
 
         if (InputManager.IsPressed(BBtn))
@@ -137,7 +153,8 @@ public class PlatformerCharacter : Entity
 
         #region movement
 
-        speed.Y += 300f * deltaTime;
+        // gravity
+        speed.Y += gravity * deltaTime;
 
         if (IsOnGround)
         {
@@ -163,13 +180,27 @@ public class PlatformerCharacter : Entity
         base.Update(deltaTime);
     }
 
+    private void Dash(float deltaTime)
+    {
+        if (dashDur > DASHDURATION) return;
+        if (facingRight) speed.X = DASHSPEED;
+        else speed.X = -DASHSPEED;
+        dashDur += deltaTime;
+    }
+
+    private void ResetDash()
+    {
+        dashDur = 0;
+        moveSpeed = RUNSPEED;
+    }
+
     private Color debugColor = Color.Cyan * .5f;
     private Color debugColorHit = Color.Yellow;
     private Rectangle PlayerRect;
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        //sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
+        sprite.Draw(spriteBatch, ScreenPosition, 0, Color.White, facingRight ? SpriteEffects.None : SpriteEffects.FlipHorizontally, scaleX, scaleY);
         spriteBatch.DrawRect((int)World.WorldToScreen(WorldPosition.X - sizex, 0).X, (int)World.WorldToScreen(0, WorldPosition.Y - sizey).Y, (int)(World.scaleX * sizex * 2), (int)(World.scaleY * sizey * 2), debugColor);
         //spriteBatch.DrawRect(World.WorldToScreen(new Vector2(tilex * 32, tiley * 32)), (int)(World.scaleX * 32), (int)(World.scaleY * 32), debugColor);
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonoTestProject.UI;
+namespace Survivor.UI;
 
 /// <summary>
 /// Holds UI elements

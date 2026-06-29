@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace MonoTestProject.UI;
+namespace Survivor.UI;
 
 public class Button : IUIElement
 {

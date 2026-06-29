@@ -1,3 +1,9 @@
-﻿
-using var game = new MonoTestProject.MainGame();
+﻿using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .MinimumLevel.Debug()
+    .CreateLogger();
+
+using var game = new Survivor.SurvivorGame();
 game.Run();

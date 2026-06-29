@@ -2,11 +2,11 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoTestProject.UI;
+using Survivor.UI;
 using System;
 using System.Collections.Generic;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class MainGame : Game
 {
@@ -61,7 +61,7 @@ public class MainGame : Game
     private float xoff = 0, yoff = 0;
     private float xscale = 1, yscale = 1;
 
-    private float targetScale = 1;
+    private float targetScale = 2;
     private float maxtargetscale = 8f;
     private float mintargetscale = 0.5f;
 
@@ -70,17 +70,19 @@ public class MainGame : Game
     Vector2 mouseWorldPosTile;
     Vector2 mouseScreenPosTile;
     private int lastScrollWheel;
-    
+
     private const float tileWidth = 32;
     private const float tileWidthHalf = tileWidth / 2;
     public static int worldTileWidth, worldTileHeight;
-    
+
     public static TileType[] tiles;
-    private bool focusCharacter = false;
+    private bool focusCharacter = true;
 
     public MainGame()
     {
         _graphics = new GraphicsDeviceManager(this);
+        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = 1280;
         ScreenWidth = _graphics.PreferredBackBufferWidth;
         ScreenHeight = _graphics.PreferredBackBufferHeight;
         Content.RootDirectory = "Content";
@@ -98,10 +100,12 @@ public class MainGame : Game
             "- [O] to shoot. Hold [O] for one second and release for charged shot" +
             "- [T] to add block at cursor \n" +
             "- [R] to remove block at cursor \n" +
+            "- [Q] to lock/unlock camera" +
+            "- [Mouse scroll] to zoom in/out" +
             "- [Right mouse button] to add enemy");
 
         base.Initialize();
-        SoundEffect.MasterVolume = .0f;
+        SoundEffect.MasterVolume = 1.0f;
 
         worldTileWidth = (int)(ScreenWidth / tileWidth);
         worldTileHeight = (int)(ScreenHeight / tileWidth);
@@ -230,15 +234,16 @@ public class MainGame : Game
         {
             focusCharacter = !focusCharacter;
         }
-
-        //if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
-        //if (InputManager.IsPressed(MouseButtons.RightButton))
-        //{
-        //    //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
-        //    var e = new Enemy(World.ScreenToWorld(mousestate.Position.ToVector2()));
-        //    Console.WriteLine("Enemy added {0}", e.GetHashCode());
-        //    Enemies.Add(e);
-        //}
+        // add enemy on right click
+        if (PrevRMBState == ButtonState.Released && mousestate.RightButton == ButtonState.Pressed)
+            if (InputManager.IsPressed(MouseButtons.RightButton))
+            {
+                //for (int i = 0; i < 5000; i++) Enemies.Add(new Enemy(mousestate.Position.ToVector2()));
+                var e = new Enemy(World.ScreenToWorld(mousestate.Position.ToVector2()));
+                e.Target = character;
+                Console.WriteLine("Enemy added {0}", e.GetHashCode());
+                Enemies.Add(e);
+            }
 
         var currmouseposition = mousestate.Position.ToVector2();
 
@@ -256,6 +261,7 @@ public class MainGame : Game
 
         var oldmouseworldcoord = World.ScreenToWorld(currmouseposition);
 
+        // zoom in/out
         if (lastScrollWheel - mousestate.ScrollWheelValue > 0)
         {
             targetScale *= 2f;
@@ -287,7 +293,7 @@ public class MainGame : Game
                 xscale = yscale = targetScale;
             }
         }
-        
+
         lastMousePosition = mousestate.Position.ToVector2();
         var mousewpos = World.ScreenToWorld(lastMousePosition);
         WorldToTile(mousewpos, (int)tileWidth, out int x, out int y);
@@ -408,7 +414,7 @@ public class MainGame : Game
 
         for (int y = 0; y < worldTileHeight; y++)
         {
-            for (int x = 0;  x < worldTileWidth; x++)
+            for (int x = 0; x < worldTileWidth; x++)
             {
                 var tileindex = (y * worldTileWidth) + x;
                 var tile = tiles[tileindex];

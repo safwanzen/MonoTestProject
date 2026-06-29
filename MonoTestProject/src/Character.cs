@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class Character : Entity
 {
@@ -13,6 +13,7 @@ public class Character : Entity
 
     private Sprite sprite;
     private AnimatedSprite bulletSprite;
+    private AnimatedSprite runningSprite;
     private Sprite bulletLargeSprite;
 
     public Vector2 direction;

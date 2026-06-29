@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace MonoTestProject.UI;
+namespace Survivor.UI;
 
 public interface IUIElement
 {

@@ -2,11 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class Enemy : Entity
 {
-    private float speed = 0;
+    public Entity Target;
+
+    private float gravity = 1500f;
+
+    private float speed = 30;
     private Vector2 origin = new();
 
     public Texture2D Texture;
@@ -47,7 +51,7 @@ public class Enemy : Entity
         //Console.WriteLine("took damage");
         Hit = true;
         damageFlashTimer = damageTime;
-        //MainGame.Sounds[1].Play();
+        MainGame.Sounds[1].Play();
         MainGame.Entities.Add(new DamageParticle(WorldPosition, -MathHelper.PiOver2, .8f, damage.ToString()) { Speed = 300 });
         if (HitPoints <= 0)
         {
@@ -77,11 +81,17 @@ public class Enemy : Entity
 
     public override void Update(float deltaTime)
     {
+        // apply gravity to enemy
+        // make enemy move towards player
+        // player takes damage upon contact
+
         if (immunityCounter > 0)
             immunityCounter -= deltaTime;
         else
             immunityCounter = 0;
 
+        Direction = Target.WorldPosition - WorldPosition;
+        Direction.Normalize();
         WorldPosition += Direction * speed * deltaTime;
 
         Hitbox.X = (int)WorldPosition.X - Texture.Width / 2;

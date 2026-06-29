@@ -1,4 +1,4 @@
-﻿namespace MonoTestProject;
+﻿namespace Survivor;
 
 public enum TileType
 {

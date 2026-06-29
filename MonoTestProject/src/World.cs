@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public class World
 {

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace MonoTestProject;
+namespace Survivor;
 
 public static class SpriteBatchShapeExtension
 {
