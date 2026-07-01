@@ -1,13 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Serilog;
-using Survivor.Levels;
-using Survivor.Manager;
-using System;
+using Survivor;
 
-namespace Survivor;
+namespace Hockey;
 
-public class SurvivorGame : Game
+public class HockeyGame : Game
 {
     public static int ScreenWidth, ScreenHeight = 0;
     private GraphicsDeviceManager _graphics;
@@ -19,7 +17,9 @@ public class SurvivorGame : Game
     private float nextExp = 100;
     private float nextExpMul = 0.1f;
 
-    public SurvivorGame()
+    private SpriteFont Font;
+
+    public HockeyGame()
     {
         _graphics = new GraphicsDeviceManager(this);
         _graphics.PreferredBackBufferHeight = 720;
@@ -34,9 +34,10 @@ public class SurvivorGame : Game
     {
         InputManager.SetWindow(Window);
         
-        EntityManager.Manager.AddObject(new Player());
+        EntityManager.Manager.AddObject(new Player(Content));
+        EntityManager.Manager.AddObject(new GoalPost());
 
-        Log.Information($"{nameof(SurvivorGame)} initialized." +
+        Log.Information($"{nameof(HockeyGame)} initialized." +
             $" Width {_graphics.PreferredBackBufferWidth} Height {_graphics.PreferredBackBufferHeight}");
         base.Initialize();
     }
@@ -45,8 +46,9 @@ public class SurvivorGame : Game
     {
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        
+
         // should i make a class for managing contents?
+        Font = Content.Load<SpriteFont>("TextFont");
 
         base.LoadContent();
     }
@@ -61,10 +63,11 @@ public class SurvivorGame : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(Color.Gainsboro);
         _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
         EntityManager.Manager.Draw(_spriteBatch);
-        _spriteBatch.End();
+
         base.Draw(gameTime);
+        _spriteBatch.End();
     }
 }

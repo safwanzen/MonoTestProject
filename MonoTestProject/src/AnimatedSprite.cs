@@ -6,7 +6,8 @@ namespace Survivor;
 
 public class AnimatedSprite : Sprite
 {
-    public Action OnAnimationEnd = () => { }; 
+    public Action OnAnimationEnd = () => { };
+    public float AnimationSpeedScale = 1;
 
     public int FrameIndex { get; private set; }
     private readonly int numFrames;
@@ -17,7 +18,7 @@ public class AnimatedSprite : Sprite
     private int durationIndex = 0;
     private float duration = 0;
     private float[] durations; // if duration is variable
-    private float totalDuration = 0;
+    //private float totalDuration = 0;
 
     private float currentDuration = 0;
 
@@ -33,7 +34,7 @@ public class AnimatedSprite : Sprite
         this.fps = fps;
         this.sequence = sequence;
         this.isLooping = isLooping;
-        totalDuration = fps;
+        //totalDuration = fps;
         duration = 1f / fps;
 
         if (sequence != null)
@@ -66,7 +67,7 @@ public class AnimatedSprite : Sprite
         this.durations = durations;
         this.sequence = sequence;
         this.isLooping = isLooping;
-        totalDuration = fps;
+        //totalDuration = fps;
 
         if (sequence != null)
         {
@@ -77,7 +78,7 @@ public class AnimatedSprite : Sprite
 
     public override void Update(float deltaTime)
     {
-        currentDuration += deltaTime;
+        currentDuration += deltaTime * AnimationSpeedScale;
         sourceRect.X = FrameIndex * sourceRect.Width;
         
         if (durations != null) AnimateVariableDuration();

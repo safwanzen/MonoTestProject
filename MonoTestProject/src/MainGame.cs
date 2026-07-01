@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Survivor.UI;
@@ -86,6 +87,8 @@ public class MainGame : Game
         ScreenWidth = _graphics.PreferredBackBufferWidth;
         ScreenHeight = _graphics.PreferredBackBufferHeight;
         Content.RootDirectory = "Content";
+        //var cm = new ContentManager(Services);
+        //cm.RootDirectory = "Content";
         IsMouseVisible = true;
     }
 

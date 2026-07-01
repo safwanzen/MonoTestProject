@@ -1,12 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Hockey;
 
-namespace Survivor.Manager;
+namespace Hockey;
 
 public class EntityManager
 {
@@ -14,6 +11,8 @@ public class EntityManager
     private readonly List<Base> entitiesToAdd = new();
     private readonly List<Base> entitiesToRemove = new();
     private static EntityManager entitymanager;
+
+    public List<Base> Entities => entities; // why use a getter instead of direct access?
 
     private EntityManager()
     {

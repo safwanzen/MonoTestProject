@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Survivor;
+namespace Hockey;
 
 public abstract class Base
 {

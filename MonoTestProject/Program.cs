@@ -5,5 +5,5 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .CreateLogger();
 
-using var game = new Survivor.SurvivorGame();
+using var game = new Hockey.HockeyGame();
 game.Run();

@@ -1,14 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Serilog;
-using Survivor.Manager;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Survivor;
 
-namespace Survivor;
+namespace Hockey;
 
 public class Projectile : Base
 {
@@ -37,32 +31,31 @@ public class Projectile : Base
             EntityManager.Manager.RemoveObject(this);
         }
 
-        // collision
-        // with screen edge
+        // collision with screen edge
         bool outofBounds =
-            WorldPosition.X + width / 2 > SurvivorGame.ScreenWidth
+            WorldPosition.X + width / 2 > HockeyGame.ScreenWidth
             || WorldPosition.X - width / 2 < 0
-            || WorldPosition.Y + height / 2 > SurvivorGame.ScreenHeight
+            || WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight
             || WorldPosition.Y - height / 2 < 0;
 
-        if (WorldPosition.X + width / 2 > SurvivorGame.ScreenWidth)
+        if (WorldPosition.X + width / 2 > HockeyGame.ScreenWidth)
         {
-            x = SurvivorGame.ScreenWidth - width;
+            x = HockeyGame.ScreenWidth - width / 2;
             sx *= -1;
         }
         if (WorldPosition.X - width / 2 < 0)
         {
-            x = width;
+            x = width / 2;
             sx *= -1;
         }
-        if (WorldPosition.Y + height / 2 > SurvivorGame.ScreenHeight)
+        if (WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight)
         {
-            y = SurvivorGame.ScreenHeight - height;
+            y = HockeyGame.ScreenHeight - height / 2;
             sy *= -1;
         }
         if (WorldPosition.Y - height / 2 < 0)
         {
-            y = height;
+            y = height / 2;
             sy *= -1;
         }
 
@@ -70,7 +63,41 @@ public class Projectile : Base
         Speed = new Vector2(sx, sy);
         if (outofBounds) Speed *= bounceDecell;
 
+        CheckGoalCollision();
+
         //Log.Debug("projectile {0} {1}", GetHashCode(), Speed.Length());
+    }
+
+    private void CheckGoalCollision()
+    {
+        Vector2 a = WorldPosition;
+        int aw = width / 2; // because origin is at the center
+        int ah = height / 2;
+        bool collide = false;
+
+        foreach (Base e in EntityManager.Manager.Entities)
+        {
+            if (e is GoalPost g)
+            {
+                Vector2 b = g.WorldPosition;
+                int bw = g.Width / 2; // because origin is at the center
+                int bh = g.Height / 2;
+
+                collide = 
+                    a.X + aw > b.X - bw
+                    && a.X - aw < b.X + bw
+                    && a.Y + ah > b.Y - bh
+                    && a.Y - ah < b.Y + bh;
+
+                if (collide)
+                {
+                    EntityManager.Manager.RemoveObject(this);
+                    //Speed = Vector2.Zero;
+                    break;
+                }
+            }
+        }
+
     }
 
     public override void Draw(SpriteBatch spriteBatch)
