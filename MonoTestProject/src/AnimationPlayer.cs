@@ -14,6 +14,6 @@ public class AnimationPlayer
 
     public void Draw(SpriteBatch spriteBatch, Vector2 position, float rotation, Color color, SpriteEffects spriteEffects, float scaleX, float scaleY)
     {
-        sprite.Draw(spriteBatch, position, rotation, color, spriteEffects, scaleX, scaleY);
+        sprite.Draw(spriteBatch, position, rotation, color, spriteEffects: spriteEffects, scaleX: scaleX, scaleY: scaleY);
     }
 }

@@ -14,7 +14,7 @@ public class HockeyGame : Game
     // tile based map 256 x 224 px (NES resolution) 
     // for 16x16px = 16x14 tiles
 
-    public static World World;
+    public static World World = new() { scaleX = 4, scaleY = 4 };
     public static int ScreenWidth, ScreenHeight = 0;
     public static int WorldWidth, WorldHeight;
     private const int TileSize = 16;
@@ -24,25 +24,36 @@ public class HockeyGame : Game
 
     public HockeyGame()
     {
+        int mul = 4; // screen is 4x world
+
         _graphics = new GraphicsDeviceManager(this);
+        _graphics.PreferredBackBufferWidth = 1024; // 4x NES resolution
         _graphics.PreferredBackBufferHeight = 896;
-        _graphics.PreferredBackBufferWidth = 1024;
         ScreenWidth = _graphics.PreferredBackBufferWidth;
         ScreenHeight = _graphics.PreferredBackBufferHeight;
-        WorldWidth = ScreenWidth / TileSize;
-        WorldHeight = ScreenHeight / TileSize;
-        World = new();
+
+        WorldWidth = ScreenWidth / mul;
+        WorldHeight = ScreenHeight / mul; // NES resolution
 
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+        
     }
 
     protected override void Initialize()
     {
         InputManager.SetWindow(Window);
         
-        EntityManager.Manager.AddObject(new Player(Content));
-        EntityManager.Manager.AddObject(new GoalPost());
+        EntityManager.Manager.AddObject(new Player(Content)
+        {
+            WorldPosition = new Vector2(20, WorldHeight / 2)
+        });
+        EntityManager.Manager.AddObject(new GoalPost()
+        {
+            Width = 30,
+            Height = 90,
+            WorldPosition = new Vector2(WorldWidth, WorldHeight / 2)
+        });
 
         Random r = new Random();
 
@@ -50,8 +61,8 @@ public class HockeyGame : Game
         for(int i = 0; i < count; i++)
         {
             var o = new Obstacle(Content, new Vector2(
-                (float)r.NextDouble() * ScreenWidth,
-                (float)r.NextDouble() * ScreenHeight),
+                (int)(r.NextDouble() * WorldWidth / TileSize) * TileSize,
+                (int)(r.NextDouble() * WorldHeight / TileSize) * TileSize),
                 (ObstacleType)(int)(r.NextDouble() * Enum.GetNames(typeof(ObstacleType)).Length));
 
             EntityManager.Manager.AddObject(o);
@@ -66,9 +77,6 @@ public class HockeyGame : Game
     {
         GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        // should i make a class for managing contents?
-        Font = Content.Load<SpriteFont>("TextFont");
 
         base.LoadContent();
     }
@@ -85,9 +93,10 @@ public class HockeyGame : Game
     {
         GraphicsDevice.Clear(Color.Gainsboro);
         _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
+        
         EntityManager.Manager.Draw(_spriteBatch);
 
-        base.Draw(gameTime);
         _spriteBatch.End();
+        base.Draw(gameTime);
     }
 }

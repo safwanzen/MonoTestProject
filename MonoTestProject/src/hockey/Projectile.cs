@@ -53,14 +53,14 @@ public class Projectile : Base
         float sy = Speed.Y;
 
         bool outofBounds =
-                    WorldPosition.X + width / 2 > HockeyGame.ScreenWidth
+                    WorldPosition.X + width / 2 > HockeyGame.WorldWidth
                     || WorldPosition.X - width / 2 < 0
-                    || WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight
+                    || WorldPosition.Y + height / 2 > HockeyGame.WorldHeight
                     || WorldPosition.Y - height / 2 < 0;
 
-        if (WorldPosition.X + width / 2 > HockeyGame.ScreenWidth)
+        if (WorldPosition.X + width / 2 > HockeyGame.WorldWidth)
         {
-            x = HockeyGame.ScreenWidth - width / 2;
+            x = HockeyGame.WorldWidth - width / 2;
             sx *= -1;
         }
         if (WorldPosition.X - width / 2 < 0)
@@ -68,9 +68,9 @@ public class Projectile : Base
             x = width / 2;
             sx *= -1;
         }
-        if (WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight)
+        if (WorldPosition.Y + height / 2 > HockeyGame.WorldHeight)
         {
-            y = HockeyGame.ScreenHeight - height / 2;
+            y = HockeyGame.WorldHeight - height / 2;
             sy *= -1;
         }
         if (WorldPosition.Y - height / 2 < 0)
@@ -121,7 +121,7 @@ public class Projectile : Base
         //spriteBatch.DrawRect(
         //    new Vector2(WorldPosition.X - width / 2, WorldPosition.Y - height / 2),
         //    width, height, Color.Red);
-
-        puck.Draw(spriteBatch, WorldPosition, 0, Color.White, SpriteEffects.None, spriteScale, spriteScale);
+        var scale = HockeyGame.World.scaleX;
+        puck.Draw(spriteBatch, HockeyGame.World.WorldToScreen(WorldPosition), 0, Color.White, layerDepth: 0.5f, scaleX: scale, scaleY: scale);
     }
 }

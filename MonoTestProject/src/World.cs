@@ -4,8 +4,8 @@ namespace Survivor;
 
 public class World
 {
-    public float offsetX;
-    public float offsetY;
+    public float offsetX = 0;
+    public float offsetY = 0;
 
     public float scaleX = 1, scaleY = 1;
 

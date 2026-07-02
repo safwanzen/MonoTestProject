@@ -16,32 +16,34 @@ public enum ObstacleType
 public class Obstacle : Base
 {
     Sprite sprite;
-    Vector2 WorldPosition;
-    float scale = 1;
+    public Vector2 WorldPosition;
+    int tilesize = 16;
 
+    public ObstacleType ObstacleType;
     public Rectangle Hitbox;
 
     public Obstacle(ContentManager contentManager, Vector2 position, ObstacleType obstacleType)
     {
-        int s = 16;
+        ObstacleType = obstacleType;
         WorldPosition = position;
         sprite = new Sprite(
             contentManager.Load<Texture2D>("hockey/obstacle"),
-            new Rectangle(16 * (int)obstacleType, 0, s, s),
-            new Vector2(s/2));
+            new Rectangle(16 * (int)obstacleType, 0, tilesize, tilesize),
+            Vector2.Zero);
 
-        Hitbox = new Rectangle((int)WorldPosition.X - s / 2, (int)WorldPosition.Y - s / 2, s, s);
+        Hitbox = new Rectangle((int)WorldPosition.X, (int)WorldPosition.Y, tilesize, tilesize);
     }
 
     private void UpdateHitBoxPosition()
     {
-        Hitbox.X = (int)WorldPosition.X - Hitbox.Width / 2;
-        Hitbox.Y = (int)WorldPosition.Y - Hitbox.Height / 2;
+        Hitbox.X = (int)WorldPosition.X;
+        Hitbox.Y = (int)WorldPosition.Y;
     }
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        sprite.Draw(spriteBatch, WorldPosition, 0, Color.White, SpriteEffects.None, scale, scale);
+        var scale = HockeyGame.World.scaleX;
+        sprite.Draw(spriteBatch, HockeyGame.World.WorldToScreen(WorldPosition), 0, Color.White, scaleX: scale, scaleY: scale);
     }
 
     public override void Update(GameTime gameTime)

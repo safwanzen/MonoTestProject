@@ -22,9 +22,9 @@ public class Sprite
 
     }
 
-    public void Draw(SpriteBatch spriteBatch, Vector2 position, float rotation, Color color, SpriteEffects spriteEffects = SpriteEffects.None, float scaleX = 1, float scaleY = 1)
+    public void Draw(SpriteBatch spriteBatch, Vector2 position, float rotation, Color color, float layerDepth = 0, SpriteEffects spriteEffects = SpriteEffects.None, float scaleX = 1, float scaleY = 1)
     {
         spriteBatch.Draw(texture, position, sourceRect, color, rotation,
-            origin, new Vector2(scaleX, scaleY), spriteEffects, 0);
+            origin, new Vector2(scaleX, scaleY), spriteEffects, layerDepth);
     }
 }

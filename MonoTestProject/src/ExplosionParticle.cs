@@ -25,6 +25,6 @@ public class ExplosionParticle : Particle
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        sprite.Draw(spriteBatch, ScreenPosition, RotationRad, Color.White, SpriteEffects.None, scaleX, scaleY);
+        sprite.Draw(spriteBatch, ScreenPosition, RotationRad, Color.White, spriteEffects: SpriteEffects.None, scaleX: scaleX, scaleY: scaleY);
     }
 }

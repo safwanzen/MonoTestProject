@@ -230,6 +230,6 @@ public class Bullet : Entity
         //}
         //spriteBatch.Draw(Sprite, Position, null, Color.White, rotationAngle,
         //    spriteOrigin, Vector2.One, SpriteEffects.None, 0f);
-        sprite.Draw(spriteBatch, ScreenPosition, rotationAngle, Color.White, SpriteEffects.None, scaleX, scaleY);
+        sprite.Draw(spriteBatch, ScreenPosition, rotationAngle, Color.White, scaleX: scaleX, scaleY: scaleY);
     }
 }

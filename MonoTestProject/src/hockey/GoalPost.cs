@@ -6,15 +6,12 @@ namespace Hockey;
 
 public class GoalPost : Base
 {
-    public int Width;
-    public int Height;
-    public Vector2 WorldPosition = Vector2.Zero;
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public Vector2 WorldPosition { get; set; }
 
     public GoalPost()
     {
-        WorldPosition = new Vector2(HockeyGame.ScreenWidth, HockeyGame.ScreenHeight / 2);
-        Width = 60;
-        Height = 200;
     }
 
     public override void Update(GameTime gameTime)
@@ -23,6 +20,8 @@ public class GoalPost : Base
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        spriteBatch.DrawRect(new Vector2(WorldPosition.X - Width / 2, WorldPosition.Y - Height / 2), Width, Height, Color.Blue);
+        float scale = HockeyGame.World.scaleX;
+        spriteBatch.DrawRect(
+            HockeyGame.World.WorldToScreen(new Vector2(WorldPosition.X - Width / 2, WorldPosition.Y - Height / 2)), Width, Height, Color.Blue, scale, scale);
     }
 }

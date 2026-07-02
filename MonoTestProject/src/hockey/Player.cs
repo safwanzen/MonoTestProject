@@ -19,24 +19,31 @@ enum AnimState
     RunU,
     Charging,
     Swinging,
+    Fall
     //RunR,
     //RunUR,
     //RunDR
 }
 
+enum ActionState
+{
+    Normal,
+    Fall
+}
+
 public class Player : Base
 {
     private const float decell = 0.99f;
-    private const int width = 16;
-    private const int height = 16;
+    private const int width = 8;
+    private const int height = 8;
     private float health;
-    private Vector2 WorldPosition;
+    public Vector2 WorldPosition;
     private Vector2 Speed;
     private Vector2 direction;
     private Vector2 facingDirection = new Vector2(1, 0);
-    private float maxAccel = 2300f;
-    private float maxSpeed = 800f;
-    private float projectileSpeed = 1200f;
+    private float maxAccel = 575f;
+    private float maxSpeed = 200f;
+    private float projectileSpeed = 300f;
     private float brakeRate = 0.87f;
     private float minSpeed = 9f;
 
@@ -48,13 +55,16 @@ public class Player : Base
 
     // graphics
     Dictionary<AnimState, AnimatedSprite> animatedSprites;
-    Sprite standingSprite;
     AnimatedSprite currentSprite;
     Sprite shadow;
     float spriteScale = 1;
 
     AnimState animState;
     AnimState prevAnimState;
+    ActionState actionState = ActionState.Normal;
+
+    //State<AnimState> stateRunning;
+    //State<AnimState> stateFall;
 
     Texture2D sheet;
     int spritesize = 16; // 16 x 16 px tile
@@ -63,6 +73,9 @@ public class Player : Base
     ContentManager contentManager;
     int hitRadius = 10;
     Vector2 origin;
+
+    const float fallTime = 1f;
+    float fallTimer = 0;
 
     public Rectangle Hitbox;
 
@@ -87,8 +100,8 @@ public class Player : Base
             { AnimState.RunL,   ExtractFrames(0 , 2) },
             { AnimState.RunDL,  ExtractFrames(7 , 2) },
             { AnimState.RunD,   ExtractFrames(4 , 2) },
+            { AnimState.Fall,   ExtractFrames(20, 1) },
         };
-        standingSprite = new Sprite(sheet, new Rectangle(spritesize, 0, spritesize, spritesize), origin);
         var shadowsprite = contentManager.Load<Texture2D>("hockey/player-shadow");
         shadow = new Sprite(shadowsprite, new Rectangle(0, 0, spritesize, spritesize), new Vector2(spritesize / 2, spritesize / 2));
     }
@@ -109,50 +122,32 @@ public class Player : Base
     {
         var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        maxAccel = 2300;
-
-        // input
-        u = InputManager.IsDown(Keys.W);
-        d = InputManager.IsDown(Keys.S);
-        l = InputManager.IsDown(Keys.A);
-        r = InputManager.IsDown(Keys.D);
-        braking = InputManager.IsDown(Keys.I);
-        shoot = InputManager.IsReleased(Keys.O);
-        charge = InputManager.IsDown(Keys.O);
+        if (actionState == ActionState.Normal) Input();
+        if (actionState == ActionState.Fall)
+        {
+            fallTimer += dt;
+            if (fallTimer > fallTime)
+            {
+                fallTimer = 0;
+                actionState = ActionState.Normal;
+                animState = prevAnimState;
+                //stateRunning = stateRunning.Previous;
+            }
+        }
 
         bool moving = u || d || l || r;
 
-        if (u && d) { direction.Y = 0; }
-        else if (u) 
-        { 
-            direction.Y = -1;
-        }
-        else if (d) 
-        { 
-            direction.Y = 1;
-        }
-        else { direction.Y = 0; }
-
-        if (l && r) { direction.X = 0; }
-        else if (l)
-        { 
-            direction.X = -1;
-        }
-        else if (r)
-        { 
-            direction.X = 1;
-        }
-        else { direction.X = 0; }
-
         if (direction.Length() > 0)
-        { 
+        {
             direction.Normalize();
             facingDirection = direction;
         }
 
-        prevAnimState = animState;
-
-        if (Math.Abs(direction.X) > 0 && direction.Y < 0) 
+        if (actionState == ActionState.Fall)
+        {
+            direction = Vector2.Zero;
+        }
+        else if (Math.Abs(direction.X) > 0 && direction.Y < 0)
             animState = AnimState.RunUL;
         else if (Math.Abs(direction.X) > 0 && direction.Y > 0)
             animState = AnimState.RunDL;
@@ -160,14 +155,15 @@ public class Player : Base
             animState = AnimState.RunL;
         else if (direction.Y < 0)
             animState = AnimState.RunU;
-        else if (direction.Y > 0) 
+        else if (direction.Y > 0)
             animState = AnimState.RunD;
 
-        if (prevAnimState != animState) Log.Debug("changed {0}", animState.ToString());
-
         currentSprite = animatedSprites[animState];
-        
-        if (!moving) currentSprite.FrameIndex = 1;
+
+        if (!moving && actionState == ActionState.Normal)
+        {
+            currentSprite.FrameIndex = 1;
+        }
 
         float accel = 0f;
         if (u || d || l || r) accel = maxAccel;
@@ -175,7 +171,7 @@ public class Player : Base
 
         //speedMagnitude += direction.Length() * accel * deltaTime;
         if (Speed.Length() < maxSpeed)
-        { 
+        {
             Speed += direction * accel * dt;
         }
         else
@@ -192,7 +188,7 @@ public class Player : Base
         }
         // decellerate
         else
-        { 
+        {
             Speed *= decell;
         }
 
@@ -209,25 +205,96 @@ public class Player : Base
 
         if (Speed.Length() < minSpeed) Speed = Vector2.Zero;
 
-        CheckBoundaryCollision();
         UpdateHitBoxPosition();
-        
+        CheckObstacleCollision();
+        CheckBoundaryCollision();
 
-        // check for map collision
-        // check for enemy collision
+        currentSprite.Update(dt);
+    }
+
+    private void Input()
+    {
+        // input
+        u = InputManager.IsDown(Keys.W);
+        d = InputManager.IsDown(Keys.S);
+        l = InputManager.IsDown(Keys.A);
+        r = InputManager.IsDown(Keys.D);
+        braking = InputManager.IsDown(Keys.I);
+        shoot = InputManager.IsReleased(Keys.O);
+        charge = InputManager.IsDown(Keys.O);
+
+        if (u && d) { direction.Y = 0; }
+        else if (u)
+        {
+            direction.Y = -1;
+        }
+        else if (d)
+        {
+            direction.Y = 1;
+        }
+        else { direction.Y = 0; }
+
+        if (l && r) { direction.X = 0; }
+        else if (l)
+        {
+            direction.X = -1;
+        }
+        else if (r)
+        {
+            direction.X = 1;
+        }
+        else { direction.X = 0; }
+    }
+
+    private void CheckObstacleCollision()
+    {
         foreach (var e in EntityManager.Manager.Entities)
         {
             if (e is Obstacle obs)
             {
-                if (obs.Hitbox.Intersects(Hitbox))
+                if (!obs.Hitbox.Intersects(Hitbox)) continue;
+                //Log.Debug("hit obstacle {0} {1}", obs.ObstacleType, obs.GetHashCode());
+                
+                if (Speed.Length() < 100)
                 {
-                    Log.Debug("hit obstacle {0}", obs.GetHashCode());
+                    var oh = obs.Hitbox;
+                    var h = Hitbox;
+                    var w = WorldPosition;
+
+                    // which side to solve first? vertical or horizontal?
+                    // solve which overlap is smaller
+
+                    var i = Rectangle.Intersect(oh, h);
+                    Log.Debug("{0}", i.ToString());
+                    if (Math.Abs(i.Width) < Math.Abs(i.Height))
+                    {
+                        // solve X axis
+                        Speed.X = 0;
+                        if (w.X < obs.WorldPosition.X) WorldPosition.X = (int)WorldPosition.X - i.Width + 1;
+                        else WorldPosition.X = (int)WorldPosition.X + i.Width;
+                    }
+                    else
+                    {
+                        // solve Y axis
+                        Speed.Y = 0;
+                        if (w.Y < obs.WorldPosition.Y) WorldPosition.Y = (int)WorldPosition.Y - i.Height + 1;
+                        else WorldPosition.Y = (int)WorldPosition.Y + i.Height;
+                    }
+
                     break;
                 }
+
+                actionState = ActionState.Fall;
+                if (animState != AnimState.Fall)
+                {
+                    prevAnimState = animState;
+                    animState = AnimState.Fall;
+                }
+                //stateRunning.SetState(new State<AnimState>(AnimState.Fall));
+                break;
+                
             }
         }
-
-        currentSprite.Update(dt);
     }
 
     private void UpdateHitBoxPosition()
@@ -245,14 +312,14 @@ public class Player : Base
 
         // check for boundary collision
         bool outofBounds =
-            WorldPosition.X + width / 2 > HockeyGame.ScreenWidth
+            WorldPosition.X + width / 2 > HockeyGame.WorldWidth
             || WorldPosition.X - width / 2 < 0
-            || WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight
+            || WorldPosition.Y + height / 2 > HockeyGame.WorldHeight
             || WorldPosition.Y - height / 2 < 0;
 
-        if (WorldPosition.X + width / 2 > HockeyGame.ScreenWidth)
+        if (WorldPosition.X + width / 2 > HockeyGame.WorldWidth)
         {
-            x = HockeyGame.ScreenWidth - width / 2;
+            x = HockeyGame.WorldWidth - width / 2;
             sx = 0;
         }
         if (WorldPosition.X - width / 2 < 0)
@@ -260,9 +327,9 @@ public class Player : Base
             x = width / 2;
             sx = 0;
         }
-        if (WorldPosition.Y + height / 2 > HockeyGame.ScreenHeight)
+        if (WorldPosition.Y + height / 2 > HockeyGame.WorldHeight)
         {
-            y = HockeyGame.ScreenHeight - height / 2;
+            y = HockeyGame.WorldHeight - height / 2;
             sy = 0;
         }
         if (WorldPosition.Y - height / 2 < 0)
@@ -277,11 +344,10 @@ public class Player : Base
 
     public override void Draw(SpriteBatch spritebatch)
     {
-        int s = 5;
         var w = WorldPosition;
-        spritebatch.DrawRect(
-            new Vector2(w.X - width / 2, w.Y - height / 2),
-            width, height, Color.DarkGray);
+        var screenpos = HockeyGame.World.WorldToScreen(new Vector2(w.X, w.Y));
+        var scale = HockeyGame.World.scaleX;
+
 
         //spritebatch.DrawLine(w, w + Vector2.Multiply(facingDirection, 50), Color.YellowGreen);
         //spritebatch.DrawLine(w, w + Vector2.Multiply(direction, 50), Color.Red);
@@ -289,9 +355,13 @@ public class Player : Base
         //    new Vector2[] { new(s, s), new(s, -s), new(-s, -s), new(-s, s) },
         //    Color.YellowGreen);
 
-        shadow.Draw(spritebatch, new Vector2(w.X, w.Y), 0, Color.White, SpriteEffects.None, spriteScale, spriteScale);
+        shadow.Draw(spritebatch, screenpos, 0, Color.White, spriteEffects: SpriteEffects.None, scaleX: scale, scaleY: scale);
         bool facingR = facingDirection.X >= 0;
-        currentSprite.Draw(spritebatch, new Vector2(w.X, w.Y), 0, Color.White, facingR ? SpriteEffects.FlipHorizontally : SpriteEffects.None, spriteScale, spriteScale);
+        currentSprite.Draw(spritebatch, screenpos, 0, Color.White, layerDepth: .5f, spriteEffects: facingR ? SpriteEffects.FlipHorizontally : SpriteEffects.None, scaleX: scale, scaleY: scale);
+        
+        spritebatch.DrawRect(
+            HockeyGame.World.WorldToScreen(new Vector2(w.X - width / 2, w.Y - height / 2)),
+            width, height, Color.DarkGray, scale);
 
         // debug text
         //spritebatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
