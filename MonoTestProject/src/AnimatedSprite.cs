@@ -9,7 +9,18 @@ public class AnimatedSprite : Sprite
     public Action OnAnimationEnd = () => { };
     public float AnimationSpeedScale = 1;
 
-    public int FrameIndex { get; private set; }
+    private int frameIndex;
+
+    public int FrameIndex
+    {
+        get { return frameIndex; }
+        set
+        {
+            if (value > numFrames) frameIndex = numFrames;
+            frameIndex = value;
+        }
+    }
+
     private readonly int numFrames;
     private readonly bool isLooping;
 
@@ -27,9 +38,12 @@ public class AnimatedSprite : Sprite
 
     private bool pairDurationsWithSequence = false;
 
+    private Rectangle startRect;
+
     public AnimatedSprite(Texture2D texture, Rectangle sourceRect, Vector2 origin, int numFrames, float fps, bool isLooping = false, int[] sequence = null)
         : base(texture, sourceRect, origin)
     {
+        this.startRect = sourceRect;
         this.numFrames = numFrames;
         this.fps = fps;
         this.sequence = sequence;
@@ -39,7 +53,7 @@ public class AnimatedSprite : Sprite
 
         if (sequence != null)
         {
-            FrameIndex = sequence[0];
+            frameIndex = sequence[0];
         }
     }
 
@@ -63,6 +77,7 @@ public class AnimatedSprite : Sprite
     public AnimatedSprite(Texture2D texture, Rectangle sourceRect, Vector2 origin, int numFrames, float[] durations, bool isLooping = false, int[] sequence = null)
         : base(texture, sourceRect, origin)
     {
+        this.startRect = sourceRect;
         this.numFrames = numFrames;
         this.durations = durations;
         this.sequence = sequence;
@@ -71,7 +86,7 @@ public class AnimatedSprite : Sprite
 
         if (sequence != null)
         {
-            FrameIndex = sequence[0];
+            frameIndex = sequence[0];
             pairDurationsWithSequence = sequence.Length == durations.Length;
         }
     }
@@ -79,8 +94,8 @@ public class AnimatedSprite : Sprite
     public override void Update(float deltaTime)
     {
         currentDuration += deltaTime * AnimationSpeedScale;
-        sourceRect.X = FrameIndex * sourceRect.Width;
-        
+        sourceRect.X = startRect.X + frameIndex * sourceRect.Width;
+
         if (durations != null) AnimateVariableDuration();
         else if (fps > 0f) AnimateFixedDuration();
     }
@@ -88,8 +103,8 @@ public class AnimatedSprite : Sprite
     public void ResetAnimation()
     {
         currentDuration = 0f;
-        if (sequence != null) FrameIndex = sequence[0];
-        else FrameIndex = 0;
+        if (sequence != null) frameIndex = sequence[0];
+        else frameIndex = 0;
         sequenceIndex = 0;
         durationIndex = 0;
     }
@@ -97,32 +112,32 @@ public class AnimatedSprite : Sprite
     private void NextFrame()
     {
         currentDuration = 0;
-        
+
         if (sequence != null)
         {
             ++sequenceIndex;
-            
-            if (sequenceIndex >= sequence.Length) 
+
+            if (sequenceIndex >= sequence.Length)
             {
                 if (isLooping) sequenceIndex = 0;
                 else sequenceIndex = sequence.Length - 1;
                 OnAnimationEnd();
             }
 
-            FrameIndex = sequence[sequenceIndex];
+            frameIndex = sequence[sequenceIndex];
             if (pairDurationsWithSequence) durationIndex = sequenceIndex;
-            else durationIndex = FrameIndex;
+            else durationIndex = frameIndex;
         }
         else
         {
-            ++FrameIndex;
-            if (FrameIndex > numFrames - 1)
+            ++frameIndex;
+            if (frameIndex > numFrames - 1)
             {
-                if (isLooping) FrameIndex = 0;
-                else FrameIndex = numFrames - 1;
+                if (isLooping) frameIndex = 0;
+                else frameIndex = numFrames - 1;
                 OnAnimationEnd();
             }
-            durationIndex = FrameIndex;
+            durationIndex = frameIndex;
         }
     }
 
@@ -139,6 +154,6 @@ public class AnimatedSprite : Sprite
         if (currentDuration > durations[durationIndex])
         {
             NextFrame();
-        }        
+        }
     }
 }
