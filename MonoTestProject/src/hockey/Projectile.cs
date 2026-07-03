@@ -122,6 +122,6 @@ public class Projectile : Base
         //    new Vector2(WorldPosition.X - width / 2, WorldPosition.Y - height / 2),
         //    width, height, Color.Red);
         var scale = HockeyGame.World.scaleX;
-        puck.Draw(spriteBatch, HockeyGame.World.WorldToScreen(WorldPosition), 0, Color.White, layerDepth: 0.5f, scaleX: scale, scaleY: scale);
+        puck.Draw(spriteBatch, HockeyGame.World.WorldToScreen(WorldPosition), 0, Color.White, layerDepth: 0.2f, scaleX: scale, scaleY: scale);
     }
 }

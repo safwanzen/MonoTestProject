@@ -92,7 +92,7 @@ public class HockeyGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Gainsboro);
-        _spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp);
+        _spriteBatch.Begin(SpriteSortMode.FrontToBack, null, SamplerState.PointClamp);
         
         EntityManager.Manager.Draw(_spriteBatch);
 

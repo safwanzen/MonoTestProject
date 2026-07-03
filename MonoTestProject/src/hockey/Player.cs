@@ -78,6 +78,7 @@ public class Player : Base
     float fallTimer = 0;
 
     public Rectangle Hitbox;
+    List<Obstacle> overlaps = new();
 
     public Player(ContentManager cmanager)
     {
@@ -100,7 +101,7 @@ public class Player : Base
             { AnimState.RunL,   ExtractFrames(0 , 2) },
             { AnimState.RunDL,  ExtractFrames(7 , 2) },
             { AnimState.RunD,   ExtractFrames(4 , 2) },
-            { AnimState.Fall,   ExtractFrames(20, 1) },
+            { AnimState.Fall,   ExtractFrames(19, 1) },
         };
         var shadowsprite = contentManager.Load<Texture2D>("hockey/player-shadow");
         shadow = new Sprite(shadowsprite, new Rectangle(0, 0, spritesize, spritesize), new Vector2(spritesize / 2, spritesize / 2));
@@ -252,49 +253,63 @@ public class Player : Base
         {
             if (e is Obstacle obs)
             {
-                if (!obs.Hitbox.Intersects(Hitbox)) continue;
-                //Log.Debug("hit obstacle {0} {1}", obs.ObstacleType, obs.GetHashCode());
-                
-                if (Speed.Length() < 100)
+                bool hit = obs.Hitbox.Intersects(Hitbox);
+                bool contains = overlaps.Contains(obs);
+
+                if (hit && !contains)
                 {
-                    var oh = obs.Hitbox;
-                    var h = Hitbox;
-                    var w = WorldPosition;
-
-                    // which side to solve first? vertical or horizontal?
-                    // solve which overlap is smaller
-
-                    var i = Rectangle.Intersect(oh, h);
-                    Log.Debug("{0}", i.ToString());
-                    if (Math.Abs(i.Width) < Math.Abs(i.Height))
-                    {
-                        // solve X axis
-                        Speed.X = 0;
-                        if (w.X < obs.WorldPosition.X) WorldPosition.X = (int)WorldPosition.X - i.Width + 1;
-                        else WorldPosition.X = (int)WorldPosition.X + i.Width;
-                    }
-                    else
-                    {
-                        // solve Y axis
-                        Speed.Y = 0;
-                        if (w.Y < obs.WorldPosition.Y) WorldPosition.Y = (int)WorldPosition.Y - i.Height + 1;
-                        else WorldPosition.Y = (int)WorldPosition.Y + i.Height;
-                    }
-
-                    break;
+                    overlaps.Add(obs);
+                    OnCollisionEnter(obs);
                 }
-
-                actionState = ActionState.Fall;
-                if (animState != AnimState.Fall)
+                if (!hit && contains)
                 {
-                    prevAnimState = animState;
-                    animState = AnimState.Fall;
+                    overlaps.Remove(obs);
+                    OnCollisionLeave(obs);
                 }
-                //stateRunning.SetState(new State<AnimState>(AnimState.Fall));
-                break;
-                
             }
         }
+    }
+
+    private void OnCollisionEnter(Obstacle obs)
+    {
+        Log.Debug("{0} collision enter {1}", typeof(Obstacle), obs.GetHashCode());
+        if (actionState == ActionState.Normal)
+        {
+            actionState = ActionState.Fall;
+            prevAnimState = animState;
+            animState = AnimState.Fall;
+        }
+        // resolve collision
+        else if (actionState == ActionState.Fall)
+        {
+            var oh = obs.Hitbox;
+            var h = Hitbox;
+            var w = WorldPosition;
+
+            // which side to solve first? vertical or horizontal?
+            // solve which overlap is smaller
+
+            var i = Rectangle.Intersect(oh, h);
+            if (Math.Abs(i.Width) < Math.Abs(i.Height))
+            {
+                // solve X axis
+                Speed.X = 0;
+                if (w.X < obs.WorldPosition.X) WorldPosition.X = (int)WorldPosition.X - i.Width + 1;
+                else WorldPosition.X = (int)WorldPosition.X + i.Width;
+            }
+            else
+            {
+                // solve Y axis
+                Speed.Y = 0;
+                if (w.Y < obs.WorldPosition.Y) WorldPosition.Y = (int)WorldPosition.Y - i.Height + 1;
+                else WorldPosition.Y = (int)WorldPosition.Y + i.Height;
+            }
+        }
+    }
+
+    private void OnCollisionLeave(Obstacle obs)
+    {
+        Log.Debug("{0} collision leave {1}", typeof(Obstacle), obs.GetHashCode());
     }
 
     private void UpdateHitBoxPosition()
@@ -358,10 +373,10 @@ public class Player : Base
         shadow.Draw(spritebatch, screenpos, 0, Color.White, spriteEffects: SpriteEffects.None, scaleX: scale, scaleY: scale);
         bool facingR = facingDirection.X >= 0;
         currentSprite.Draw(spritebatch, screenpos, 0, Color.White, layerDepth: .5f, spriteEffects: facingR ? SpriteEffects.FlipHorizontally : SpriteEffects.None, scaleX: scale, scaleY: scale);
-        
-        spritebatch.DrawRect(
-            HockeyGame.World.WorldToScreen(new Vector2(w.X - width / 2, w.Y - height / 2)),
-            width, height, Color.DarkGray, scale);
+
+        //spritebatch.DrawRect(
+        //    HockeyGame.World.WorldToScreen(new Vector2(w.X - width / 2, w.Y - height / 2)),
+        //    width, height, Color.DarkGray, scale);
 
         // debug text
         //spritebatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
