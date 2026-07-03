@@ -73,29 +73,29 @@ public class Projectile : Base
         float sy = Speed.Y;
 
         bool outofBounds =
-                    WorldPosition.X + width / 2 > HockeyGame.WorldWidth
-                    || WorldPosition.X - width / 2 < 0
-                    || WorldPosition.Y + height / 2 > HockeyGame.WorldHeight
-                    || WorldPosition.Y - height / 2 < 0;
+                    WorldPosition.X + hitsize / 2 > HockeyGame.WorldWidth
+                    || WorldPosition.X - hitsize / 2 < 0
+                    || WorldPosition.Y + hitsize / 2 > HockeyGame.WorldHeight
+                    || WorldPosition.Y - hitsize / 2 < 0;
 
-        if (WorldPosition.X + width / 2 > HockeyGame.WorldWidth)
+        if (WorldPosition.X + hitsize / 2 > HockeyGame.WorldWidth)
         {
-            x = HockeyGame.WorldWidth - width / 2;
+            x = HockeyGame.WorldWidth - hitsize / 2;
             sx *= -1;
         }
-        if (WorldPosition.X - width / 2 < 0)
+        if (WorldPosition.X - hitsize / 2 < 0)
         {
-            x = width / 2;
+            x = hitsize / 2;
             sx *= -1;
         }
-        if (WorldPosition.Y + height / 2 > HockeyGame.WorldHeight)
+        if (WorldPosition.Y + hitsize / 2 > HockeyGame.WorldHeight)
         {
-            y = HockeyGame.WorldHeight - height / 2;
+            y = HockeyGame.WorldHeight - hitsize / 2;
             sy *= -1;
         }
-        if (WorldPosition.Y - height / 2 < 0)
+        if (WorldPosition.Y - hitsize / 2 < 0)
         {
-            y = height / 2;
+            y = hitsize / 2;
             sy *= -1;
         }
 

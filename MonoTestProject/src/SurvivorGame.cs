@@ -14,7 +14,8 @@ public class HockeyGame : Game
     // tile based map 256 x 224 px (NES resolution) 
     // for 16x16px = 16x14 tiles
 
-    public static World World = new() { scaleX = 4, scaleY = 4 };
+    const int MUL = 2; // screen is 4x world
+    public static World World = new() { scaleX = MUL, scaleY = MUL };
     public static int ScreenWidth, ScreenHeight = 0;
     public static int WorldWidth, WorldHeight;
     private const int TileSize = 16;
@@ -28,7 +29,6 @@ public class HockeyGame : Game
 
     public HockeyGame()
     {
-        int mul = 4; // screen is 4x world
 
         _graphics = new GraphicsDeviceManager(this);
         _graphics.PreferredBackBufferWidth = 1024; // 4x NES resolution
@@ -36,8 +36,8 @@ public class HockeyGame : Game
         ScreenWidth = _graphics.PreferredBackBufferWidth;
         ScreenHeight = _graphics.PreferredBackBufferHeight;
 
-        WorldWidth = ScreenWidth / mul;
-        WorldHeight = ScreenHeight / mul; // NES resolution
+        WorldWidth = ScreenWidth / MUL;
+        WorldHeight = ScreenHeight / MUL; // NES resolution
 
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
@@ -63,16 +63,16 @@ public class HockeyGame : Game
             WorldPosition = new Vector2(WorldWidth / 2, WorldHeight / 2)
         });
 
-        int count = 10;
-        for(int i = 0; i < count; i++)
-        {
-            var o = new Obstacle(Content, new Vector2(
-                (int)(rand.NextDouble() * WorldWidth / TileSize) * TileSize,
-                (int)(rand.NextDouble() * WorldHeight / TileSize) * TileSize),
-                (ObstacleType)(int)(rand.NextDouble() * Enum.GetNames(typeof(ObstacleType)).Length));
+        //int count = 10;
+        //for(int i = 0; i < count; i++)
+        //{
+        //    var o = new Obstacle(Content, new Vector2(
+        //        (int)(rand.NextDouble() * WorldWidth / TileSize) * TileSize,
+        //        (int)(rand.NextDouble() * WorldHeight / TileSize) * TileSize),
+        //        (ObstacleType)(int)(rand.NextDouble() * Enum.GetNames(typeof(ObstacleType)).Length));
 
-            EntityManager.Manager.AddObject(o);
-        }
+        //    EntityManager.Manager.AddObject(o);
+        //}
 
         Log.Information($"{nameof(HockeyGame)} initialized." +
             $" Width {_graphics.PreferredBackBufferWidth} Height {_graphics.PreferredBackBufferHeight}");

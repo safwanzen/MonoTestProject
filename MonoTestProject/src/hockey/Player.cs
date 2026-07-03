@@ -36,7 +36,6 @@ public class Player : Base
     private const float decell = 0.99f;
     private const int width = 8;
     private const int height = 8;
-    private float health;
     public Vector2 WorldPosition;
     private Vector2 Speed;
     private Vector2 inputDirection;
@@ -51,6 +50,7 @@ public class Player : Base
     private bool u, d, l, r;
     bool braking = false;
     bool shoot = false;
+    bool lockDir = false;
     bool charge = false;
 
     // graphics
@@ -72,6 +72,9 @@ public class Player : Base
 
     const float fallTime = 1f;
     float fallTimer = 0;
+
+    float maxShootTime = .07f;
+    float shootTime = 0;
 
     public Rectangle Hitbox;
     List<Obstacle> overlaps = new();
@@ -145,22 +148,22 @@ public class Player : Base
         if (inputDirection.Length() > 0)
         {
             inputDirection.Normalize();
-            facingDirection = inputDirection;
+            if (!lockDir) facingDirection = inputDirection;
         }
 
         if (actionState == ActionState.Fall)
         {
             inputDirection = Vector2.Zero;
         }
-        else if (Math.Abs(inputDirection.X) > 0 && inputDirection.Y < 0)
+        else if (Math.Abs(facingDirection.X) > 0 && facingDirection.Y < 0)
             animState = AnimState.RunUL;
-        else if (Math.Abs(inputDirection.X) > 0 && inputDirection.Y > 0)
+        else if (Math.Abs(facingDirection.X) > 0 && facingDirection.Y > 0)
             animState = AnimState.RunDL;
-        else if (Math.Abs(inputDirection.X) > 0)
+        else if (Math.Abs(facingDirection.X) > 0)
             animState = AnimState.RunL;
-        else if (inputDirection.Y < 0)
+        else if (facingDirection.Y < 0)
             animState = AnimState.RunU;
-        else if (inputDirection.Y > 0)
+        else if (facingDirection.Y > 0)
             animState = AnimState.RunD;
 
         currentSprite = animatedSprites[animState];
@@ -197,8 +200,11 @@ public class Player : Base
             Speed *= decell;
         }
 
-        if (shoot && ammoCount > 0)
+        if (shootTime < maxShootTime) shootTime += dt;
+
+        if (shoot && ammoCount > 0 && shootTime >= maxShootTime)
         {
+            shootTime = 0;
             Log.Debug("dir {0} {1}", facingDirection, projectileSpeed);
             var b = new Projectile(contentManager)
             {
@@ -229,6 +235,7 @@ public class Player : Base
         braking = InputManager.IsDown(Keys.I);
         shoot = InputManager.IsReleased(Keys.O);
         charge = InputManager.IsDown(Keys.O);
+        lockDir = InputManager.IsDown(Keys.P);
 
         if (u && d) { inputDirection.Y = 0; }
         else if (u)
@@ -264,27 +271,20 @@ public class Player : Base
 
                 if (hit && !contains)
                 {
-                    overlaps.Add(obs);
                     OnCollisionEnter(obs);
                 }
                 if (!hit && contains)
                 {
-                    overlaps.Remove(obs);
                     OnCollisionLeave(obs);
                 }
             }
-            //else if (e is Projectile p)
-            //{
-            //    if (Vector2.Distance(WorldPosition, p.WorldPosition) < projectileHitDist)
-            //    {
-            //        ammoCount++;
-            //    }
-            //}
         }
     }
 
     private void OnCollisionEnter(Obstacle obs)
     {
+        overlaps.Add(obs);
+
         Log.Debug("{0} collision enter {1}", typeof(Obstacle), obs.GetHashCode());
         if (actionState == ActionState.Normal)
         {
@@ -322,6 +322,7 @@ public class Player : Base
 
     private void OnCollisionLeave(Obstacle obs)
     {
+        overlaps.Remove(obs);
         Log.Debug("{0} collision leave {1}", typeof(Obstacle), obs.GetHashCode());
     }
 
