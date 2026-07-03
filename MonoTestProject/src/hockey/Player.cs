@@ -39,7 +39,7 @@ public class Player : Base
     private float health;
     public Vector2 WorldPosition;
     private Vector2 Speed;
-    private Vector2 direction;
+    private Vector2 inputDirection;
     private Vector2 facingDirection = new Vector2(1, 0);
     private float maxAccel = 575f;
     private float maxSpeed = 200f;
@@ -57,21 +57,17 @@ public class Player : Base
     Dictionary<AnimState, AnimatedSprite> animatedSprites;
     AnimatedSprite currentSprite;
     Sprite shadow;
-    float spriteScale = 1;
+    Sprite ammo;
 
     AnimState animState;
     AnimState prevAnimState;
     ActionState actionState = ActionState.Normal;
-
-    //State<AnimState> stateRunning;
-    //State<AnimState> stateFall;
 
     Texture2D sheet;
     int spritesize = 16; // 16 x 16 px tile
     float animFps = 15;
 
     ContentManager contentManager;
-    int hitRadius = 10;
     Vector2 origin;
 
     const float fallTime = 1f;
@@ -79,6 +75,8 @@ public class Player : Base
 
     public Rectangle Hitbox;
     List<Obstacle> overlaps = new();
+    int ammoCount = 0;
+    private float ammoDist = 6;
 
     public Player(ContentManager cmanager)
     {
@@ -93,7 +91,6 @@ public class Player : Base
 
     private void InitSprite()
     {
-
         animatedSprites = new()
         {
             { AnimState.RunU,   ExtractFrames(15, 2) },
@@ -104,7 +101,14 @@ public class Player : Base
             { AnimState.Fall,   ExtractFrames(19, 1) },
         };
         var shadowsprite = contentManager.Load<Texture2D>("hockey/player-shadow");
-        shadow = new Sprite(shadowsprite, new Rectangle(0, 0, spritesize, spritesize), new Vector2(spritesize / 2, spritesize / 2));
+
+        shadow = new Sprite(shadowsprite, 
+            new Rectangle(0, 0, spritesize, spritesize),
+            new Vector2(spritesize / 2, spritesize / 2));
+
+        ammo = new Sprite(contentManager.Load<Texture2D>("hockey/hockey_puck"),
+            new Rectangle(0, 0, spritesize, spritesize),
+            new Vector2(spritesize / 2, spritesize / 2));
     }
 
     private AnimatedSprite ExtractFrames(int position, int frames, bool loop = true)
@@ -138,25 +142,25 @@ public class Player : Base
 
         bool moving = u || d || l || r;
 
-        if (direction.Length() > 0)
+        if (inputDirection.Length() > 0)
         {
-            direction.Normalize();
-            facingDirection = direction;
+            inputDirection.Normalize();
+            facingDirection = inputDirection;
         }
 
         if (actionState == ActionState.Fall)
         {
-            direction = Vector2.Zero;
+            inputDirection = Vector2.Zero;
         }
-        else if (Math.Abs(direction.X) > 0 && direction.Y < 0)
+        else if (Math.Abs(inputDirection.X) > 0 && inputDirection.Y < 0)
             animState = AnimState.RunUL;
-        else if (Math.Abs(direction.X) > 0 && direction.Y > 0)
+        else if (Math.Abs(inputDirection.X) > 0 && inputDirection.Y > 0)
             animState = AnimState.RunDL;
-        else if (Math.Abs(direction.X) > 0)
+        else if (Math.Abs(inputDirection.X) > 0)
             animState = AnimState.RunL;
-        else if (direction.Y < 0)
+        else if (inputDirection.Y < 0)
             animState = AnimState.RunU;
-        else if (direction.Y > 0)
+        else if (inputDirection.Y > 0)
             animState = AnimState.RunD;
 
         currentSprite = animatedSprites[animState];
@@ -173,7 +177,7 @@ public class Player : Base
         //speedMagnitude += direction.Length() * accel * deltaTime;
         if (Speed.Length() < maxSpeed)
         {
-            Speed += direction * accel * dt;
+            Speed += inputDirection * accel * dt;
         }
         else
         {
@@ -193,15 +197,17 @@ public class Player : Base
             Speed *= decell;
         }
 
-        if (shoot)
+        if (shoot && ammoCount > 0)
         {
             Log.Debug("dir {0} {1}", facingDirection, projectileSpeed);
             var b = new Projectile(contentManager)
             {
                 Speed = Vector2.Normalize(facingDirection) * (projectileSpeed + Speed.Length()),
-                WorldPosition = WorldPosition
+                WorldPosition = WorldPosition + facingDirection * 10
             };
             EntityManager.Manager.AddObject(b);
+            ammoCount--;
+            Log.Debug("ammo count = {0}", ammoCount);
         }
 
         if (Speed.Length() < minSpeed) Speed = Vector2.Zero;
@@ -224,27 +230,27 @@ public class Player : Base
         shoot = InputManager.IsReleased(Keys.O);
         charge = InputManager.IsDown(Keys.O);
 
-        if (u && d) { direction.Y = 0; }
+        if (u && d) { inputDirection.Y = 0; }
         else if (u)
         {
-            direction.Y = -1;
+            inputDirection.Y = -1;
         }
         else if (d)
         {
-            direction.Y = 1;
+            inputDirection.Y = 1;
         }
-        else { direction.Y = 0; }
+        else { inputDirection.Y = 0; }
 
-        if (l && r) { direction.X = 0; }
+        if (l && r) { inputDirection.X = 0; }
         else if (l)
         {
-            direction.X = -1;
+            inputDirection.X = -1;
         }
         else if (r)
         {
-            direction.X = 1;
+            inputDirection.X = 1;
         }
-        else { direction.X = 0; }
+        else { inputDirection.X = 0; }
     }
 
     private void CheckObstacleCollision()
@@ -267,6 +273,13 @@ public class Player : Base
                     OnCollisionLeave(obs);
                 }
             }
+            //else if (e is Projectile p)
+            //{
+            //    if (Vector2.Distance(WorldPosition, p.WorldPosition) < projectileHitDist)
+            //    {
+            //        ammoCount++;
+            //    }
+            //}
         }
     }
 
@@ -357,6 +370,12 @@ public class Player : Base
         Speed = new Vector2(sx, sy);
     }
 
+    public void AddAmmo()
+    {
+        ammoCount++;
+        Log.Debug("ammo count = {0}", ammoCount);
+    }
+
     public override void Draw(SpriteBatch spritebatch)
     {
         var w = WorldPosition;
@@ -374,6 +393,13 @@ public class Player : Base
         bool facingR = facingDirection.X >= 0;
         currentSprite.Draw(spritebatch, screenpos, 0, Color.White, layerDepth: .5f, spriteEffects: facingR ? SpriteEffects.FlipHorizontally : SpriteEffects.None, scaleX: scale, scaleY: scale);
 
+        if (ammoCount > 0)
+        {
+            ammo.Draw(spritebatch,
+                HockeyGame.World.WorldToScreen(WorldPosition + facingDirection * ammoDist),
+                0, Color.White, 0.4f, scaleX: scale, scaleY: scale);
+        }
+
         //spritebatch.DrawRect(
         //    HockeyGame.World.WorldToScreen(new Vector2(w.X - width / 2, w.Y - height / 2)),
         //    width, height, Color.DarkGray, scale);
@@ -381,4 +407,6 @@ public class Player : Base
         // debug text
         //spritebatch.DrawString(Font, "(0, 0)", World.WorldToScreen(0, 0), Color.White, 0f, Vector2.Zero, new Vector2(xscale, yscale), SpriteEffects.None, 0);
     }
+
+    
 }

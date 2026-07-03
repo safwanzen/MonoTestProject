@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Serilog;
 using Survivor;
 
 namespace Hockey;
@@ -10,6 +11,8 @@ public class Projectile : Base
     private const float decell = 0.99f;
     private const float bounceDecell = 0.7f;
     private int width = 16, height = 16;
+    private int hitsize = 10;
+    private int playerRadius = 10;
 
     public Vector2 WorldPosition { get; set; }
     public Vector2 Speed { get; set; }
@@ -17,15 +20,16 @@ public class Projectile : Base
     private Texture2D puckTex;
     private Sprite puck;
 
-    private float spriteScale = 1;
-
     public Rectangle Hitbox;
+    public Rectangle PlayerHitbox;
+    private bool possessed = false;
+    public Player Owner;
 
     public Projectile(ContentManager contentManager)
     {
         puckTex = contentManager.Load<Texture2D>("hockey/hockey_puck");
         puck = new Sprite(puckTex, new Rectangle(0, 0, width, height), new Vector2(width/2, height/2));
-        Hitbox = new Rectangle((int)WorldPosition.X - width / 2, (int)WorldPosition.Y - height / 2, width, height);
+        Hitbox = new Rectangle((int)WorldPosition.X - hitsize / 2, (int)WorldPosition.Y - height / 2, hitsize, hitsize);
     }
 
     public override void Update(GameTime gameTime)
@@ -34,15 +38,31 @@ public class Projectile : Base
         WorldPosition += Speed * dt;
         Speed *= decell;
 
-        if (Speed.Length() < 9f)
-        {
-            EntityManager.Manager.RemoveObject(this);
-        }
-
         CheckBoundaryCollision();
         CheckGoalCollision();
+        if (!possessed) CheckPlayerCollision();
+    }
 
-        //Log.Debug("projectile {0} {1}", GetHashCode(), Speed.Length());
+    private void CheckPlayerCollision()
+    {
+        foreach (var e in EntityManager.Manager.Entities)
+        {
+            if (e is Player p)
+            {
+                if (Vector2.Distance(p.WorldPosition, WorldPosition) < playerRadius)
+                {
+                    possessed = true;
+                    Log.Debug("picked up by {0} {1}", nameof(Player), p.GetHashCode());
+                    EntityManager.Manager.RemoveObject(this);
+                    p.AddAmmo();
+                }
+            }
+        }
+    }
+
+    public void Shoot(Vector2 direction, float speed)
+    {
+        Speed = direction * speed;
     }
 
     private void CheckBoundaryCollision()
@@ -121,7 +141,8 @@ public class Projectile : Base
         //spriteBatch.DrawRect(
         //    new Vector2(WorldPosition.X - width / 2, WorldPosition.Y - height / 2),
         //    width, height, Color.Red);
+        var screenpos = HockeyGame.World.WorldToScreen(WorldPosition);
         var scale = HockeyGame.World.scaleX;
-        puck.Draw(spriteBatch, HockeyGame.World.WorldToScreen(WorldPosition), 0, Color.White, layerDepth: 0.2f, scaleX: scale, scaleY: scale);
+        puck.Draw(spriteBatch, screenpos, 0, Color.White, layerDepth: 0.1f + screenpos.Y / HockeyGame.ScreenHeight * 0.2f, scaleX: scale, scaleY: scale);
     }
 }

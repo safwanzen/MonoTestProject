@@ -21,6 +21,10 @@ public class HockeyGame : Game
 
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    
+    Random rand = new Random();
+    const float maxSpawnTime = 5;
+    double spawnTimer = 0;
 
     public HockeyGame()
     {
@@ -43,27 +47,29 @@ public class HockeyGame : Game
     protected override void Initialize()
     {
         InputManager.SetWindow(Window);
-        
-        EntityManager.Manager.AddObject(new Player(Content)
+        var manager = EntityManager.Manager;
+        manager.AddObject(new Player(Content)
         {
             WorldPosition = new Vector2(20, WorldHeight / 2)
         });
-        EntityManager.Manager.AddObject(new GoalPost()
+        //manager.AddObject(new GoalPost()
+        //{
+        //    Width = 30,
+        //    Height = 90,
+        //    WorldPosition = new Vector2(WorldWidth, WorldHeight / 2)
+        //});
+        EntityManager.Manager.AddObject(new Projectile(Content)
         {
-            Width = 30,
-            Height = 90,
-            WorldPosition = new Vector2(WorldWidth, WorldHeight / 2)
+            WorldPosition = new Vector2(WorldWidth / 2, WorldHeight / 2)
         });
-
-        Random r = new Random();
 
         int count = 10;
         for(int i = 0; i < count; i++)
         {
             var o = new Obstacle(Content, new Vector2(
-                (int)(r.NextDouble() * WorldWidth / TileSize) * TileSize,
-                (int)(r.NextDouble() * WorldHeight / TileSize) * TileSize),
-                (ObstacleType)(int)(r.NextDouble() * Enum.GetNames(typeof(ObstacleType)).Length));
+                (int)(rand.NextDouble() * WorldWidth / TileSize) * TileSize,
+                (int)(rand.NextDouble() * WorldHeight / TileSize) * TileSize),
+                (ObstacleType)(int)(rand.NextDouble() * Enum.GetNames(typeof(ObstacleType)).Length));
 
             EntityManager.Manager.AddObject(o);
         }
@@ -81,10 +87,24 @@ public class HockeyGame : Game
         base.LoadContent();
     }
 
+    private void SpawnAmmoRandom()
+    {
+        EntityManager.Manager.AddObject(new Projectile(Content)
+        {
+            WorldPosition = new Vector2((float)rand.NextDouble() * WorldWidth, (float)rand.NextDouble() * WorldHeight)
+        });
+    }
+
     protected override void Update(GameTime gameTime)
     {
         InputManager.BeginFrame();
         EntityManager.Manager.Update(gameTime);
+        spawnTimer += gameTime.ElapsedGameTime.TotalSeconds;
+        if (spawnTimer > maxSpawnTime)
+        {
+            spawnTimer = 0;
+            SpawnAmmoRandom();
+        }
         InputManager.EndFrame();
         base.Update(gameTime);
     }
