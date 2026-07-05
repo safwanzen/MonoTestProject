@@ -11,7 +11,7 @@ public class Projectile : Base
     private const float decell = 0.99f;
     private const float bounceDecell = 0.7f;
     private int width = 16, height = 16;
-    private int hitsize = 10;
+    private int hitsize = 11;
     private int playerRadius = 10;
 
     public Vector2 WorldPosition { get; set; }
@@ -22,8 +22,8 @@ public class Projectile : Base
 
     public Rectangle Hitbox;
     public Rectangle PlayerHitbox;
-    private bool possessed = false;
-    public Player Owner;
+    public bool Possessed = false;
+    public Base Owner;
 
     public Projectile(ContentManager contentManager)
     {
@@ -38,26 +38,39 @@ public class Projectile : Base
         WorldPosition += Speed * dt;
         Speed *= decell;
 
+        Hitbox.X = (int)WorldPosition.X - hitsize / 2;
+        Hitbox.Y = (int)WorldPosition.Y - hitsize / 2;
+
         CheckBoundaryCollision();
         CheckGoalCollision();
-        if (!possessed) CheckPlayerCollision();
+        //if (!Possessed) CheckObjectCollision();
     }
 
-    private void CheckPlayerCollision()
+    private void CheckObjectCollision()
     {
         foreach (var e in EntityManager.Manager.Entities)
         {
-            if (e is Player p)
+            
+            if (e is Snowman s)
             {
-                if (Vector2.Distance(p.WorldPosition, WorldPosition) < playerRadius)
+                if (Hitbox.Intersects(s.Hitbox))
                 {
-                    possessed = true;
-                    Log.Debug("picked up by {0} {1}", nameof(Player), p.GetHashCode());
+                    Log.Debug("hit {0}", nameof(Snowman), s.GetHashCode());
                     EntityManager.Manager.RemoveObject(this);
-                    p.AddAmmo();
                 }
             }
         }
+    }
+
+    private void CheckEnemyCollision(Snowman s)
+    {
+
+    }
+
+    public void SetOwner(Base owner)
+    {
+        Owner = owner;
+        Possessed = true;
     }
 
     public void Shoot(Vector2 direction, float speed)
@@ -138,11 +151,9 @@ public class Projectile : Base
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        //spriteBatch.DrawRect(
-        //    new Vector2(WorldPosition.X - width / 2, WorldPosition.Y - height / 2),
-        //    width, height, Color.Red);
         var screenpos = HockeyGame.World.WorldToScreen(WorldPosition);
         var scale = HockeyGame.World.scaleX;
         puck.Draw(spriteBatch, screenpos, 0, Color.White, layerDepth: 0.1f + screenpos.Y / HockeyGame.ScreenHeight * 0.2f, scaleX: scale, scaleY: scale);
+        //spriteBatch.DrawRect(HockeyGame.World.WorldToScreen(new Vector2(Hitbox.X, Hitbox.Y)), hitsize, hitsize, Color.Red, scale, scale);
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Hockey;
+using Serilog;
 
 namespace Hockey;
 
@@ -31,11 +32,13 @@ public class EntityManager
     public void AddObject(Base b)
     {
         entitiesToAdd.Add(b);
+        Log.Debug("add object {0}", b.GetHashCode());
     }
 
     public void RemoveObject(Base b)
     {
         entitiesToRemove.Add(b);
+        Log.Debug("remove object {0}", b.GetHashCode());
     }
 
     internal void Update(GameTime gameTime)

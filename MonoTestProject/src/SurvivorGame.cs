@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Serilog;
 using Survivor;
 using System;
@@ -13,6 +14,11 @@ public class HockeyGame : Game
 
     // tile based map 256 x 224 px (NES resolution) 
     // for 16x16px = 16x14 tiles
+
+    // should collisions be handled by an outsider or
+    // each class handle their own collision?
+    // for small games this might not be a big deal
+    // when scaling up i may need to refactor
 
     const int MUL = 2; // screen is 4x world
     public static World World = new() { scaleX = MUL, scaleY = MUL };
@@ -63,6 +69,11 @@ public class HockeyGame : Game
             WorldPosition = new Vector2(WorldWidth / 2, WorldHeight / 2)
         });
 
+        EntityManager.Manager.AddObject(new Snowman(Content)
+        {
+            WorldPosition = new Vector2(WorldWidth / 2, WorldHeight / 2)
+        });
+
         //int count = 10;
         //for(int i = 0; i < count; i++)
         //{
@@ -87,8 +98,10 @@ public class HockeyGame : Game
         base.LoadContent();
     }
 
-    private void SpawnAmmoRandom()
+    private void SpawnAmmoRandomT(double dt)
     {
+        spawnTimer += dt;
+        if (spawnTimer <= maxSpawnTime) return;
         EntityManager.Manager.AddObject(new Projectile(Content)
         {
             WorldPosition = new Vector2((float)rand.NextDouble() * WorldWidth, (float)rand.NextDouble() * WorldHeight)
@@ -99,12 +112,23 @@ public class HockeyGame : Game
     {
         InputManager.BeginFrame();
         EntityManager.Manager.Update(gameTime);
-        spawnTimer += gameTime.ElapsedGameTime.TotalSeconds;
-        if (spawnTimer > maxSpawnTime)
+        //SpawnAmmoRandomT(gameTime.ElapsedGameTime.TotalSeconds);
+
+        if (InputManager.IsPressed(Keys.NumPad1))
         {
-            spawnTimer = 0;
-            SpawnAmmoRandom();
+            EntityManager.Manager.AddObject(new Projectile(Content)
+            {
+                WorldPosition = new Vector2((float)rand.NextDouble() * WorldWidth, (float)rand.NextDouble() * WorldHeight)
+            });
         }
+        if (InputManager.IsPressed(Keys.NumPad2))
+        {
+            EntityManager.Manager.AddObject(new Snowman(Content)
+            {
+                WorldPosition = World.ScreenToWorld(InputManager.MousePosition)
+            });
+        }
+
         InputManager.EndFrame();
         base.Update(gameTime);
     }

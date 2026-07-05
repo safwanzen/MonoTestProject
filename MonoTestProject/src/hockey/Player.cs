@@ -42,7 +42,7 @@ public class Player : Base
     private Vector2 facingDirection = new Vector2(1, 0);
     private float maxAccel = 575f;
     private float maxSpeed = 200f;
-    private float projectileSpeed = 300f;
+    private float projectileSpeed = 600f;
     private float brakeRate = 0.87f;
     private float minSpeed = 9f;
 
@@ -70,11 +70,11 @@ public class Player : Base
     ContentManager contentManager;
     Vector2 origin;
 
-    const float fallTime = 1f;
+    const float maxFallTime = .5f;
     float fallTimer = 0;
 
-    float maxShootTime = .07f;
-    float shootTime = 0;
+    float maxShootTime = .15f;
+    float shootTimer = 0;
 
     public Rectangle Hitbox;
     List<Obstacle> overlaps = new();
@@ -134,7 +134,7 @@ public class Player : Base
         if (actionState == ActionState.Fall)
         {
             fallTimer += dt;
-            if (fallTimer > fallTime)
+            if (fallTimer > maxFallTime)
             {
                 fallTimer = 0;
                 actionState = ActionState.Normal;
@@ -148,7 +148,7 @@ public class Player : Base
         if (inputDirection.Length() > 0)
         {
             inputDirection.Normalize();
-            if (!lockDir) facingDirection = inputDirection;
+            if (!lockDir && !shoot) facingDirection = inputDirection;
         }
 
         if (actionState == ActionState.Fall)
@@ -200,17 +200,19 @@ public class Player : Base
             Speed *= decell;
         }
 
-        if (shootTime < maxShootTime) shootTime += dt;
+        if (shootTimer < maxShootTime) shootTimer += dt;
 
-        if (shoot && ammoCount > 0 && shootTime >= maxShootTime)
+        if (shoot && ammoCount > 0 && shootTimer >= maxShootTime)
         {
-            shootTime = 0;
+            shootTimer = 0;
+            var fd = Vector2.Normalize(facingDirection);
             Log.Debug("dir {0} {1}", facingDirection, projectileSpeed);
             var b = new Projectile(contentManager)
             {
-                Speed = Vector2.Normalize(facingDirection) * (projectileSpeed + Speed.Length()),
-                WorldPosition = WorldPosition + facingDirection * 10
+                Speed = fd * projectileSpeed /*+ fd * Speed*/,
+                WorldPosition = WorldPosition + facingDirection * 15,
             };
+            b.SetOwner(this);
             EntityManager.Manager.AddObject(b);
             ammoCount--;
             Log.Debug("ammo count = {0}", ammoCount);
@@ -235,7 +237,7 @@ public class Player : Base
         braking = InputManager.IsDown(Keys.I);
         shoot = InputManager.IsReleased(Keys.O);
         charge = InputManager.IsDown(Keys.O);
-        lockDir = InputManager.IsDown(Keys.P);
+        lockDir = InputManager.IsDown(Keys.O);
 
         if (u && d) { inputDirection.Y = 0; }
         else if (u)
@@ -278,10 +280,26 @@ public class Player : Base
                     OnCollisionLeave(obs);
                 }
             }
+            else if (e is Projectile p)
+            {
+                if (Vector2.Distance(p.WorldPosition, WorldPosition) < p.Hitbox.Width)
+                {
+                    //p.SetOwner(this);
+                    Log.Debug("ammo picked up by {0} {1}", nameof(Player), GetHashCode());
+                    EntityManager.Manager.RemoveObject(p);
+                    AddAmmo();
+                }
+            }
         }
     }
 
-    private void OnCollisionEnter(Obstacle obs)
+    // public or private
+    private void OnCollisionEnter(Base other)
+    {
+        if (other is Obstacle obs) ObstacleCollisionEnter(obs);
+    }
+
+    private void ObstacleCollisionEnter(Obstacle obs)
     {
         overlaps.Add(obs);
 
